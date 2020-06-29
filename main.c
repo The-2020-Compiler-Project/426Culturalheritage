@@ -2,5 +2,5 @@
 
 int main(void){
     printf("Hello,world.");
-    printf("1 + 1 = %d", 2);
+    printf("1 + 1 = %d", 3);
 }
