@@ -1,0 +1,5 @@
+/compiler/.idea
+/compiler/.vs
+/compiler/cmake-build-debug
+/compiler/out
+/compiler/CMakeSettings.json
