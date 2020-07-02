@@ -2,7 +2,12 @@
  #include "stdlib.h"
  #include "string.h"
  #include "iostream"
+ #include "conio.h"
+ #include "iomanip"
  using namespace std;
+ int i = 0, line_num = 1, colomn_num = 0, syn = -1,pProject = 0; //源程序指针
+ char resourceProject[10000] ,token[20] = { 0 };
+ 
  //词法分析程序
  //首先定义种别码
  /*
@@ -178,67 +183,77 @@
 
 
  /********************编译预处理，取出无用的字符和注释**********************/
- void filterResource(char r[], int pProject)
+ void filterResource()
  {
-	     char tempString[10000];
-	     int count = 0;
-	     for (int i = 0; i <= pProject; i++)
+	     for (; i <= pProject; )
 		     {
-		         if (r[i] == '/' && r[i + 1] == '/')
-			         {//若为单行注释“//”,则去除注释后面的东西，直至遇到回车换行
-			             while (r[i] != '\n')
-				             {
-				                 i++;//向后扫描
-				             }
-			         }
-		         if (r[i] == '/' && r[i + 1] == '*')
-			         {//若为多行注释“/* 。。。*/”则去除该内容
-			             i += 2;
-			             while (r[i] != '*' || r[i + 1] != '/')
-				             {
-				                 i++;//继续扫描
-				                 if (r[i] == '$')
-					                 {
-					                     printf("注释出错，没有找到 */，程序结束！！！\n");
-					                     exit(0);
-					                 }
-				             }
-			             i += 2;//跨过“*/”
-			         }
-		         if (r[i] != '\n' && r[i] != '\t' && r[i] != '\v' && r[i] != '\r')
-			         {//若出现无用字符，则过滤；否则加载
-			             tempString[count++] = r[i];
-			         }
+			 if (resourceProject[i] == '/' && resourceProject[i + 1] == '/')
+			 {//若为单行注释“//”,则去除注释后面的东西，直至遇到回车换行
+				 while (resourceProject[i] != '\n')
+				 {   
+					
+					 i++;//向后扫描
+				 } 
+				 line_num++;
+				 colomn_num = 0;
+				 i++;
+			 }
+			 else if (resourceProject[i] == '/' && resourceProject[i + 1] == '*')
+			 {//若为多行注释“/* 。。。*/”则去除该内容
+				 i += 2;
+				 while (resourceProject[i] != '*' || resourceProject[i + 1] != '/')
+				 {
+					 i++;//继续扫描
+					 if (i >= pProject)
+					 {
+						 printf("注释出错，没有找到 */，程序结束！！！\n");
+						 exit(0);
+					 }
+				 }
+				 i += 2;//跨过“*/”
+			 }
+			 else if (resourceProject[i] == '\n')
+			 {//若出现无用字符，则过滤；否则加载
+				 line_num++;
+				 colomn_num = 0;
+				 i++;
+			 }
+			 else
+				 break;
 		     }
-	     tempString[count] = '\0';
-	     strcpy(r, tempString);//产生净化之后的源程序
+	    
+	    
 	 }
  /********************编译预处理，取出无用的字符和注释**********************/
 
 
  /****************************分析子程序，算法核心***********************/
- void Scanner(int& syn, char resourceProject[], char token[], int& pProject)
+ void Scanner()
  {//根据DFA的状态转换图设计
-	     int i, count = 0;//count用来做token[]的指示器，收集有用字符
+	     int  count = 0;//count用来做token[]的指示器，收集有用字符
 	     char ch;//作为判断使用
-	     ch = resourceProject[pProject];
+		 loop:
+		 filterResource();	    
+		 for (int j = 0; j < 20; j++)
+		     {//每次收集前先清零
+		         token[j] = '\0';
+		     }
+	     ch = resourceProject[i];
 	     while (ch == ' ')
 		     {//过滤空格，防止程序因识别不了空格而结束
-		         pProject++;
-		         ch = resourceProject[pProject];
+		         i++;
+				 goto loop;
 		     }
-	     for (i = 0; i < 20; i++)
-		     {//每次收集前先清零
-		         token[i] = '\0';
-		     }
-	     if (IsLetter(resourceProject[pProject]))
+	     if (IsLetter(resourceProject[i]))
 		     {//开头为字母
-		         token[count++] = resourceProject[pProject];//收集
-		         pProject++;//下移
-		         while (IsLetter(resourceProject[pProject]) || IsDigit(resourceProject[pProject]))
+		         token[count++] = resourceProject[i];//收集
+		         i++;//下移
+				 filterResource();
+		         while (IsLetter(resourceProject[i]) || IsDigit(resourceProject[i]))
 			         {//后跟字母或数字
-			             token[count++] = resourceProject[pProject];//收集
-			             pProject++;//下移
+			             token[count++] = resourceProject[i];//收集
+			             i++;//下移
+						 filterResource();
 			         }//多读了一个字符既是下次将要开始的指针位置
 		         token[count] = '\0';
 		         syn = searchReserve(reserveWord, token);//查表找到种别码
@@ -248,12 +263,13 @@
 			         }
 		         return;
 		     }
-	     else if (IsDigit(resourceProject[pProject]))
+	     else if (IsDigit(resourceProject[i]))
 	     {//首字符为数字
-		         while (IsDigit(resourceProject[pProject])|| resourceProject[pProject]=='.')
+		         while (IsDigit(resourceProject[i])|| resourceProject[i]=='.')
 			         {//后跟数字
-			             token[count++] = resourceProject[pProject];//收集
-			             pProject++;
+			             token[count++] = resourceProject[i];//收集
+			             i++;
+						 filterResource();
 			         }//多读了一个字符既是下次将要开始的指针位置
 		         token[count] = '\0';
 		         syn = 120;//常数种别码
@@ -262,276 +278,277 @@
 		          || ch == ','|| ch == '#' || ch == '~'|| ch == '['
 		          || ch == ']' || ch == '{' || ch == '}'|| ch == '.' || ch == '?' || ch == ':'||ch=='\''||ch=='\"')
 		     {//若为运算符或者界符，查表得到结果
-		         token[0] = resourceProject[pProject];
+		         token[0] = resourceProject[i];
 		         token[1] = '\0';//形成单字符串
-		         for (i = 0; i < 15; i++)
+		         for (int j = 0; j < 15; j++)
 			         {//查运算符界符表
-			             if (strcmp(token, operatorOrDelimiter[i]) == 0)
+			             if (strcmp(token, operatorOrDelimiter[j]) == 0)
 				             {
-				                 syn = 50 + i;//获得种别码，使用了一点技巧，使之呈线性映射
+				                 syn = 50 + j;//获得种别码，使用了一点技巧，使之呈线性映射
 				                 break;//查到即推出
 				             }
 			         }
-		         pProject++;//指针下移，为下一扫描做准备
+		         i++;//指针下移，为下一扫描做准备
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '<')
+	     else  if (resourceProject[i] == '<')
 		     {//<,<=,<<,<<=
-		         pProject++;//后移，超前搜索
-		         
-		         if (resourceProject[pProject] == '<')
+		         i++;//后移，超前搜索
+				 filterResource();
+		         if (resourceProject[i] == '<')
 			         {//左移
-					     pProject++;
-						 if(resourceProject[pProject] == '=')
+					     i++;
+						 filterResource();
+						 if(resourceProject[i] == '=')
 						  {
 							 syn = 77;
 						 }
 						 else
 						 {
-							 pProject--;
+							 i--;
 							 syn = 79;
 						 }
 			           
 			         }
-				 else if (resourceProject[pProject] == '=')
+				 else if (resourceProject[i] == '=')
 			         {
 			             syn = 80;
 			         }
 		         else
 			         {
-			             pProject--;
+			             i--;
 			             syn = 81;
 			         }
-		         pProject++;//指针下移
+		         i++;//指针下移
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '>')
+	     else  if (resourceProject[i] == '>')
 		     {//>,>=,>>，>>=
-		         pProject++;
-		        
-		         if (resourceProject[pProject] == '>')
+		         i++;
+				 filterResource();
+		         if (resourceProject[i] == '>')
 			         {
-					     pProject++;
-					     if (resourceProject[pProject] == '=')
+					     i++;
+						 filterResource();
+					     if (resourceProject[i] == '=')
 					     {
 							 syn = 82;
 					     }
 					     else
 					     {
-						     pProject--;
+						     i--;
 						     syn = 83;
 					     }
 			         }
-				 else if (resourceProject[pProject] == '=')
+				 else if (resourceProject[i] == '=')
 				     {
 					     syn = 84;
 				     }
 		         else
 			         {
-			             pProject--;
+			             i--;
 			             syn = 85;
 			         }
-		         pProject++;
+		         i++;
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '=')
+	     else  if (resourceProject[i] == '=')
 		     {//=.==
-		         pProject++;
-		         if (resourceProject[pProject] == '=')
+		         i++;
+				 filterResource();
+		         if (resourceProject[i] == '=')
 			         {
 			             syn = 95;
 			         }
 		         else
 			         {
-			             pProject--;
+			             i--;
 			             syn = 94;
 			         }
-		         pProject++;
+		         i++;
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '!')
+	     else  if (resourceProject[i] == '!')
 		     {//!,!=
-		         pProject++;
-		         if (resourceProject[pProject] == '=')
+		         i++;
+				 filterResource();
+		         if (resourceProject[i] == '=')
 			         {
 			             syn = 97;
 			         }
 		         else
 			         {
 			             syn = 96;
-			             pProject--;
+			             i--;
 			         }
-		         pProject++;
+		         i++;
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '&')
+	     else  if (resourceProject[i] == '&')
 		     {//&,&&,&=
-		         pProject++;
-		         if (resourceProject[pProject] == '&')
+		         i++;
+				 filterResource();
+		         if (resourceProject[i] == '&')
 			         {
 			             syn = 87;
 			         }
-				 else if (resourceProject[pProject] == '=')
+				 else if (resourceProject[i] == '=')
 				     {
 					     syn = 88;
 				     }
 		         else
 			         {
-			             pProject--;
+			             i--;
 			             syn = 86;
 			         }
-		         pProject++;
+		         i++;
 		         return;
 		     }
-	     else  if (resourceProject[pProject] == '|')
+	     else  if (resourceProject[i] == '|')
 		     {//|,||,|=
-		         pProject++;
-		         if (resourceProject[pProject] == '|')
+		         i++;
+				 filterResource();
+		         if (resourceProject[i] == '|')
 			         {
 			             syn = 90;
 			         }
-				 else if (resourceProject[pProject] == '=')
+				 else if (resourceProject[i] == '=')
 				     {
 					     syn = 91;
 				     }
 		         else
 			         {
-			             pProject--;
+			             i--;
 			             syn = 89;
 			         }
-		         pProject++;
+		         i++;
 		         return;
 		     }
-		 else  if (resourceProject[pProject] == '+')
+		 else  if (resourceProject[i] == '+')
 				 {//+,++,+=
-					 pProject++;
-					 if (resourceProject[pProject] == '+')
+					 i++;
+					 filterResource();
+					 if (resourceProject[i] == '+')
 					 {
 						 syn = 66;
 					 }
-					 else if (resourceProject[pProject] == '=')
+					 else if (resourceProject[i] == '=')
 					 {
 						 syn = 67;
 					 }
 					 else
 					 {
-						 pProject--;
+						 i--;
 						 syn = 65;
 					 }
-					 pProject++;
+					 i++;
 					 return;
 				 }
-		 else  if (resourceProject[pProject] == '-')
+		 else  if (resourceProject[i] == '-')
 			 {//-,--,-=,->
-			 pProject++;
-			 if (resourceProject[pProject] == '-')
+			 i++;
+			 filterResource();
+			 if (resourceProject[i] == '-')
 			 {
 				 syn = 69;
 			 }
-			 else if (resourceProject[pProject] == '=')
+			 else if (resourceProject[i] == '=')
 			 {
 				 syn = 70;
 			 }
-			 else if (resourceProject[pProject] == '>')
+			 else if (resourceProject[i] == '>')
 			 {
 				 syn = 71;
 			 }
 			 else
 			 {
-				 pProject--;
+				 i--;
 				 syn = 68;
 			 }
-			 pProject++;
+			 i++;
 			 return;
 			 }
-		 else  if (resourceProject[pProject] == '*')
+		 else  if (resourceProject[i] == '*')
 				 {//*,*=
-				 pProject++;
-				 if (resourceProject[pProject] == '=')
+				 i++;
+				 filterResource();
+				 if (resourceProject[i] == '=')
 				 {
 					 syn = 73;
 				 }
 				 else
 				 {
-					 pProject--;
+					 i--;
 					 syn = 72;
 				 }
-				 pProject++;
+				 i++;
 				 return;
 				 }
-		 else  if (resourceProject[pProject] == '/')
+		 else  if (resourceProject[i] == '/')
 				 {///,/=
-				 pProject++;
-				 if (resourceProject[pProject] == '=')
+				 i++;
+				 filterResource();
+				 if (resourceProject[i] == '=')
 				 {
 					 syn = 75;
 				 }
 				 else
 				 {
-					 pProject--;
+					 i--;
 					 syn = 74;
 				 }
-				 pProject++;
+				 i++;
 				 return;
 				 }
-		 else  if (resourceProject[pProject] == '%')
+		 else  if (resourceProject[i] == '%')
 				 {//%,%=
-				 pProject++;
-				 if (resourceProject[pProject] == '=')
+				 i++;
+				 filterResource();
+				 if (resourceProject[i] == '=')
 				 {
 					 syn = 77;
 				 }
 				 else
 				 {
-					 pProject--;
+					 i--;
 					 syn = 76;
 				 }
-				 pProject++;
+				 i++;
 				 return;
 				 }
-		 else  if (resourceProject[pProject] == '^')
+		 else  if (resourceProject[i] == '^')
 				 {//^,^=
-				 pProject++;
-				 if (resourceProject[pProject] == '=')
+				 i++;
+				 filterResource();
+				 if (resourceProject[i] == '=')
 				 {
 					 syn = 93;
 				 }
 				 else
 				 {
-					 pProject--;
+					 i--;
 					 syn = 92;
 				 }
-				 pProject++;
+				 i++;
 				 return;
 				 }
-		 else  if (resourceProject[pProject] == '\\')
+		 else  if (resourceProject[i] == '\\')
 				 {//+,++,+=
-				 pProject++;
-				 if (resourceProject[pProject] == 'n')
+				 i++;
+				 filterResource();
+				 if (resourceProject[i] == 'n')
 				 {
 					 syn = 99;
 				 }
-				 else if (resourceProject[pProject] == 't')
-				 {
-					 syn = 100;
-				 }
-				 else if (resourceProject[pProject] == 'v')
-				 {
-					 syn = 101;
-				 }
-				 else if (resourceProject[pProject] == 'r')
-				 {
-					 syn = 102;
-				 }
 				 else
 				 {
-					 pProject--;
+					 i--;
 					 syn = 98;
 				 }
-				 pProject++;
+				 i++;
 				 return;
 				 }
-	     else  if (resourceProject[pProject] == EOF)
+	     else  if (resourceProject[i] == EOF)
 		     {//结束符
 		         syn = 0;//种别码为0
 		     }
@@ -546,10 +563,6 @@
  int main()
  {
 	     //打开一个文件，读取其中的源程序
-		     char resourceProject[10000];
-	     char token[20] = { 0 };
-	     int syn = -1, i;//初始化
-	     int pProject = 0;//源程序指针
 	     FILE * fp, * fp1;
 	     if ((fp = fopen("D:\\a.txt", "r")) == NULL)
 		     {//打开源程序
@@ -564,66 +577,48 @@
 		     }
 	     resourceProject[++pProject] = '\0';
 	     fclose(fp);
-	     cout << endl << "源程序为:" << endl;
-	     cout << resourceProject << endl;
-	     //对源程序进行过滤
-		     filterResource(resourceProject, pProject);
-	     cout << endl << "过滤之后的程序:" << endl;
-	     cout << resourceProject << endl;
-	     pProject = 0;//从头开始读
-	
 		 fp1 = fopen("D:\\b.txt", "w+");
-		 cout << endl << endl;
-		     
+		 cout << setiosflags(ios::right) << setw(12) << "NAME" << setw(10) << "TYPE" << setw(8) << "LINE" << setw(8) << "COLOMN" << endl;
 	     while (syn != 0)
 		     {
 		         //启动扫描
-			         Scanner(syn, resourceProject, token, pProject);
-		        
+			         Scanner();
+					 colomn_num++;
 		         if (syn >= 1 && syn <= 74)
 			         {//保留字
-			             printf("(%s   ,  %d)\n", token,syn);
-			             fprintf(fp1, "(%s   ,  %d)\n", token,syn);
-			         }
+					     cout << setiosflags(ios::right) << setw(12) << token << setw(10) << syn << setw(8) << line_num << setw(8) << colomn_num << endl;
+			             fprintf(fp1, "(%12s%10d%10d%10d)\n", token,syn,line_num, colomn_num);
+						 getch();
+				 }
 		         else if (syn == 120)
 			         {//const 常数
-			             printf("(%s   ,   120)\n", token);
-			             fprintf(fp1, "(%s   ,   120)\n", token);
+					 cout << setiosflags(ios::right) << setw(12) << token << setw(10) << "120" << setw(8) << line_num << setw(8) << colomn_num << endl;
+					 fprintf(fp1, "(%12s%10d%10d%10d)\n", token, 120, line_num, colomn_num);
+						 getch();
 			         }
 				 else if (syn == 121)
 				 {//标识符
-					 printf("(%s   ,   121)\n", token);
-					 fprintf(fp1, "(%s   ,   121)\n", token);
+					 cout << setiosflags(ios::right) << setw(12) << token << setw(10) << 121 << setw(8) << line_num << setw(8) << colomn_num << endl;
+					 fprintf(fp1, "(%12s%10d%10d%10d)\n", token, 121, line_num, colomn_num);
+					 getch();
 				 }
 				 else if (syn >= 75 && syn <= 97)
 				 {
-					 printf("(%s   ,   %d)\n", operatorOrDelimiter[syn - 50],syn);
-					 fprintf(fp1, "(%s   ,   %d)\n", operatorOrDelimiter[syn - 50],syn);
+					 cout << setiosflags(ios::right) << setw(12) << operatorOrDelimiter[syn - 50] << setw(10) << syn << setw(8) << line_num << setw(8) << colomn_num << endl;
+					 fprintf(fp1, "(%12s%10d%10d%10d)\n", operatorOrDelimiter[syn - 50], syn, line_num, colomn_num);
+					 getch();
 				 }
 				 else if (syn == 98)
 				 {
-					 printf("(\   ,   98)\n", operatorOrDelimiter[syn - 50]);
-					 fprintf(fp1, "(\   ,   98)\n");
+					 cout << setiosflags(ios::right) << setw(12) << setw(12) << operatorOrDelimiter[syn - 50] << setw(10) << "98" << setw(8) << line_num << setw(8) << colomn_num << endl;
+					 fprintf(fp1, "(           \s%10d%10d%10d)\n", 98, line_num, colomn_num);
+					 getch();
 				 }
 				 else if (syn == 99)
 				 {
-					 printf("(\\n   ,   99)\n");
-					 fprintf(fp1, "(\\n   ,   99)\n");
-				 }
-				 else if (syn == 100)
-				 {
-					 printf("(\\t   ,  100)\n");
-					 fprintf(fp1, "(\\t   ,   100)\n");
-				 }
-				 else if (syn == 101)
-				 {
-					 printf("(\\v   ,   101)\n");
-					 fprintf(fp1, "(\\v   ,   101)\n");
-				 }
-				 else if (syn == 102)
-				 {
-					 printf("(\\r   ,   102)\n");
-					 fprintf(fp1, "(\\r   ,   102)\n");
+					 cout << setiosflags(ios::right) << setw(12) << "\\n" << setw(10) << "99"  << setw(8) << line_num << setw(8) << colomn_num << endl;
+					 fprintf(fp1, "(          \\n%10d%10d%10d)\n", 99, line_num, colomn_num);
+					 getch();
 				 }
 		 }
 	     fclose(fp1);
