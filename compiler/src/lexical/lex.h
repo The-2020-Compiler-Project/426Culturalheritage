@@ -39,6 +39,8 @@ enum Token_type {
     TK_VOID,       // "void"
     TK_STRUCT,     // "struct"
     TK_BOOL,       // "Bool"
+    TK_ARRAY,      //  array
+    TK_OF,         //  of
     TK_IF,         // "if"
     TK_ELSE,       // "else"
     TK_FOR,        // "for"
@@ -52,6 +54,8 @@ enum Token_type {
     TK_NEW,        // new
     TK_DELETE,     // delete
     TK_MAIN,       // main
+    TK_TRUE,       //true
+    TK_FALSE,      //false
     TK_EQ,         // ==
     TK_NE,         // !=
     TK_LE,         // <=
@@ -88,5 +92,5 @@ typedef struct {
 } Token;
 
 Token get_token();
-
+void Init_lexer(const char *path);
 #endif

@@ -1,0 +1,25 @@
+struct aa a_1;
+number a = 0 , b;
+string c = "abcd";
+char d = 'e';
+char *f = &d;
+struct s{
+ array[10] of number a;
+}
+
+struct aa{
+    struct aa *next;
+};
+
+
+
+number main(){
+	number aaa = 1,bbb;
+	array[5] of array[10] of number ccc;
+	a_1.next = 1;
+	while(1){
+		if(a>1){ break; }
+		else { continue; }
+	}
+	return 0;
+}
