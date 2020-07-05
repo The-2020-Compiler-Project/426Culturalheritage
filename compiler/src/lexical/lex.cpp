@@ -17,117 +17,6 @@ token[TOKENSIZE] = {0}; //改成可以保留起来,get_token时复制一份里�
 
 static ifstream resourceProject;
 
-/* 已弃用
-//词法分析程序
-//首先定义种别码
-对所有可数符号进行编码：
-<$,          0>
-<auto,       1>
-<break,      2>
-<bool,       3>
-<case,       4>
-<char,       5>
-<const,      6>
-<class,      7>
-<continue,   8>
-<cin,        9>
-<cout,      10>
-<default,   11>
-<do,        12>
-<double,    13>
-<delete,    14>
-<else,      15>
-<enum,      16>
-<extern,    17>
-<float,     18>
-<for,       19>
-<friend,    20>
-<fprintf,   21>
-<fopen,     22>
-<fclose,    23>
-<goto,      24>
-<if,        25>
-<int,       26>
-<inline,    27>
-<long,      28>
-<malloc,    29>
-<main,      30>
-<number,    31>
-<new,       32>
-<printf,    33>
-<public,    34>
-<private,   35>
-<protected, 36>
-<return,    37>
-<short,     38>
-<signed,    39>
-<sizeof,    40>
-<static,    41>
-<struct,    42>
-<switch,    43>
-<typedef,   44>
-<this,      45>
-<union,     46>
-<unsigned,  47>
-<void,      48>
-<while,     49>
-<;，        50>
-<(,         51>
-<),         52>
-<,,         53>
-<#,         54>
-<~,         55>
-<[,         56>
-<],         57>
-<{,         58>
-<},         59>
-<.,         60>
-<?,         61>
-<:,         62>
-<',         63>
-<",         64>
-<+,         65>
-<++,        66>
-<+=,        67>
-<-,         68>
-<--,        69>
-<-=,        70>
-<->,        71>
-<*,         72>
-<*=,        73>
-</,         74>
-</=,        75>
-<%,         76>
-<%=,        77>
-<<<=,       78>
-<<<,        79>
-<<=,        80>
-<<,         81>
-<>>=,       82>
-<>>,        83>
-<>=,        84>
-<>,         85>
-<&,         86>
-<&&,        87>
-<&=,        88>
-<|,         89>
-<||,        90>
-<|=,        91>
-<^,         92>
-<^=,        93>
-<=,         94>
-<==,        95>
-<!,         96>
-<!=,        97>
-<\,         98>
-<\n,        99>
-<\t,        100>
-<\v,        101>
-<\r,        102>
-<常数,      120>
-<标识符,    121>
-*/
-
 /****************************************************************************************/
 //全局变量，保留字表
 static std::unordered_map<string, Token_type> reserveWord{
@@ -138,6 +27,8 @@ static std::unordered_map<string, Token_type> reserveWord{
         {{"string"}, TK_STRINGTYPE},
         {{"void"}, TK_VOID},
         {{"struct"}, TK_STRUCT},
+        {{"array"}, TK_ARRAY},
+        {{"of"}, TK_OF},
         {{"bool"}, TK_BOOL},
         {{"if"}, TK_IF},
         {{"else"}, TK_ELSE},
@@ -154,7 +45,9 @@ static std::unordered_map<string, Token_type> reserveWord{
         {{"main"}, TK_MAIN},
         {{"return"}, TK_RETURN},
         {{"sizeof"}, TK_SIZEOF},
-};
+        {{"true"}, TK_TRUE},
+        {{"false"}, TK_FALSE}
+        };
 //界符运算符表,根据需要可以自行增加
 /*
    static const char *operatorOrDelimiter[53] = {
@@ -175,11 +68,7 @@ Token_type searchReserve(char *token) {
 
 /*********************判断是否为字母********************/
 bool IsLetter(char letter) { //注意C语言允许下划线也为标识符的一部分可以放在首部或其他地方
-    if (isalpha(letter) || letter == '_') {
-        return true;
-    } else {
-        return false;
-    }
+    return isalpha(letter) || letter == '_';
 }
 /*********************判断是否为字母********************/
 
@@ -273,13 +162,17 @@ void Scanner() { //根据DFA的状态转换图设计
 
     memset(token, 0, sizeof(char) * TOKENSIZE);
     if (!resourceProject) {
-        goto eof;
+        syn = TK_EOF; //种别码为0
+        token[0] = 'E';
+        token[1] = 'O';
+        token[2] = 'F';
+        return;
     }
 
-loop:               // 删注释，删空白，计行号
+    loop:               // 删注释，删空白，计行号
     filterResource(); //删注释
     while (resourceProject >> ch &&
-            isspace(ch)) { //过滤空格，防止程序因识别不了空格而结束
+           isspace(ch)) { //过滤空格，防止程序因识别不了空格而结束
         if (ch == '\n') {
             line_num++;
             colomn_num = 0;
@@ -304,7 +197,7 @@ loop:               // 删注释，删空白，计行号
         }; //下移
         // filterResource();
         while (IsLetter(ch) || //
-                IsDigit(ch)) {  //后跟字母或数字
+               IsDigit(ch)) {  //后跟字母或数字
             token[count++] = ch; //收集
             resourceProject >> ch;
             if (!resourceProject) {
@@ -342,9 +235,9 @@ loop:               // 删注释，删空白，计行号
         token[count] = '\0';
         syn = TK_NUM; //常数种别码
     } else if (ch == ';' || ch == '(' || ch == ')' || ch == ',' || ch == '#' ||
-            ch == '~' || ch == '[' || ch == ']' || ch == '{' || ch == '}' ||
-            ch == '.' || ch == '?' ||
-            ch == ':') { //若为运算符或者界符，查表得到结果
+               ch == '~' || ch == '[' || ch == ']' || ch == '{' || ch == '}' ||
+               ch == '.' || ch == '?' ||
+               ch == ':') { //若为运算符或者界符，查表得到结果
         token[0] = ch;
         token[1] = '\0'; //形成单字符串
 
@@ -381,12 +274,12 @@ loop:               // 删注释，删空白，计行号
                 goto eof;
             };
         } else {
-            cerr << "Error: Character too long."<<"\nline_num:"<<line_num; //报错
+            cout << "error"; // TODO: 报错
             exit(1);
         }
         syn = TK_CHAR;
     } else if (ch == '\"') { // 字符串
-read:
+        read:
         resourceProject >> ch;
         if (!resourceProject) {
             goto eof;
@@ -725,19 +618,13 @@ read:
         if (!resourceProject) {
             goto eof;
         };
-
-    } else if (!resourceProject) { //结束符
-eof:
-        syn = TK_EOF; //种别码为0
-        token[0] = 'E';
-        token[1] = 'O';
-        token[2] = 'F';
-        return;
     } else { //不能被以上词法分析识别，则出错。
         printf("error：there is no exist %c \n", ch);
         exit(1);
     }
     resourceProject.unget();
+    eof:
+    return;
 }
 /*
  * Token get_token();
@@ -762,16 +649,6 @@ void Init_lexer(const char *path) {
         exit(0);
     }
     resourceProject.unsetf(std::ios_base::skipws);
-}
-//依次读入文件，遇到注释就全部跳过
-
-int main() {
-    Init_lexer("testfile.txt");
-    auto i = get_token();
-    while (i.token_type != TK_EOF) {
-        cout << i.Name << ' ' << i.token_type << ' ' << i.line_num << ' '
-            << i.colomn_num << endl;
-        i = get_token();
-        getchar();
-    }
+    line_num = 1;
+    colomn_num = 0;
 }
