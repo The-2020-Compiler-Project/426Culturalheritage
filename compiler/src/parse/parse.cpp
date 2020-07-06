@@ -49,6 +49,7 @@ Nodebase *get_AST(){
 
     program->stmts.push_back(new Declaration_node(ND_DECL,a,type_number));
 
+
     auto _equ = 
         new Expression_Statement_node(ND_ASSIGN,c);
 

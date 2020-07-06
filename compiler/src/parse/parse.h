@@ -122,6 +122,12 @@ struct Type {
 };
 
 
+class Var{
+    char * name;
+    Data_type *type;
+    char *data;
+};
+
 struct Func {
     char *name;
 
