@@ -1,7 +1,8 @@
 #include <iostream>
 #include "lex.h"
+#include "parse.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    auto a =  get_AST();
     return 0;
 }
