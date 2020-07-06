@@ -85,7 +85,7 @@ enum Token_type {
 };
 
 typedef struct {
-    char *Name;
+    const char *Name;
     Token_type token_type;
     int line_num;
     int colomn_num;

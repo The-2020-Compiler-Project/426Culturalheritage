@@ -7,11 +7,14 @@
  */
 #ifndef _SRC_AST_AST_H
 #define _SRC_AST_AST_H
+
 #include <string>
+#include <vector>
 #include <map>
 #include "../lexical/lex.h"
+
 //节点类型
-enum NODE_TYPE{
+enum NODE_TYPE {
     ND_SEMICOLON = ';',
     ND_LEFTPAR = '(',
     ND_RIGHTPAR = ')',
@@ -81,9 +84,8 @@ enum NODE_TYPE{
     ND_PROG
 };
 
-
-
-enum Data_type{
+//一些基本数据类型的种类
+enum Data_type {
     VOID,
     NUMBER,
     CHAR,
@@ -95,25 +97,30 @@ enum Data_type{
     FUNC
 };
 
-class Type{
+//类型项，记录了类型信息
+struct Type {
+    Type(Data_type dt, int sz, Type *ptr = nullptr) :
+            data_type(dt), size(sz), ptr_to(ptr) {}
+
     Data_type data_type;
     int size;
 
     //Pointer
-    class Type *ptr_to;
+    Type *ptr_to;
 
     //Array
-    class Type *array_of;
+    Type *array_of;
     int len;
 
     //Struct
-    std::map<std::string,class Type *> members;
+    std::map<std::string, Type *> members;
     int offset;//sizeof(struct sth)
     //int alignof;
 
     //function
-    class Type *returning;
+    Type *returning;
 };
+
 
 class Var{
     char * name;
@@ -121,25 +128,20 @@ class Var{
     char *data;
 };
 
-class Func{
+struct Func {
     char *name;
+
     class Node *node;
 };
 
-class Env{
-    std::map<std::string, Var> vars;//变量声明
+/*
+struct Env{
+    Env(Env *pv):prev(pv){}
+   //std::map<std::string, Var> vars;//变量声明//TODO:
     std::map<std::string, Func> funcs;//内嵌函数
     Env *prev;
 };
-
-//符号表
-class table{
-
-
-
-};
-
-
+ */
 
 
 
@@ -149,63 +151,104 @@ class table{
 
 //语法树节点基类
 class Nodebase {
-    public:
-        Nodebase * next;//多叉树的下个兄弟
-        NODE_TYPE nodetype;
-        Token *tok;
+public:
+    //Nodebase * next;//多叉树的下个兄弟
+    std::vector<Nodebase *> stmts;
+    NODE_TYPE nodetype;
+    Type *type;
+    Token *tok;
 
-        Nodebase(NODE_TYPE nt,Token *tk,Nodebase *n = nullptr):
+    Nodebase(NODE_TYPE nt, Token *tk, Type *t = nullptr) :
+            type(t),
             nodetype(nt),
-            next(n),
-            tok(tk){};
-        Nodebase(const Nodebase &Nodebase) = delete;
-        Nodebase(Nodebase &&Nodebase) = delete;
-        Nodebase operator==(const Nodebase &Nodebase) = delete;
-        Nodebase operator==(Nodebase &&Nodebase) = delete;
-        //void setNext(Nodebase *n){next = n;}
-        //Nodebase *Next() const {return next;}
-        //Token *token() const {return tok;}
+            tok(tk) {}
 
-        virtual ~Nodebase();
+    Nodebase(NODE_TYPE nt, const char *Name, Type *t = nullptr) :
+            type(t),
+            nodetype(nt) {
+        tok = new Token;
+        tok->Name = Name;
+    };
+
+    //Nodebase(const Nodebase &Nodebase) = delete;
+    //Nodebase(Nodebase &&Nodebase) = delete;
+    //Nodebase operator==(const Nodebase &Nodebase) = delete;
+    //Nodebase operator==(Nodebase &&Nodebase) = delete;
+    //void setNext(Nodebase *n){next = n;}
+    //Nodebase *Next() const {return next;}
+    //Token *token() const {return tok;}
+    const char *getName() const { return tok->Name; }
+
+    virtual ~Nodebase() = default;
 };
 
 //声明节点
 class Declaration_node : public Nodebase {
-    public:
-        Declaration_node(Data_type dt, Token *tk, Nodebase *pam = nullptr,Nodebase *body = nullptr):
-            Nodebase(ND_VARDEF,tk),
-            type(dt),
-            parm(pam),
-            funtion_body(body){}
-        Data_type type;
+public:
+    std::vector<char *>parms;//形参
+    Declaration_node(NODE_TYPE nt,Token *tk, Type *dt = nullptr, Nodebase *pam = nullptr, Nodebase *body = nullptr) :
+            Nodebase(nt, tk, dt)
+            {}
 
-        //function
-        Nodebase *parm;
-        Nodebase *funtion_body;
+    //函数声明或调用
+    Type *ftype;//函数返回值类型
+    std::vector<char *>args;//实参
+    Nodebase *fptr;//函数指针
+    std::vector<char *>localvars;
+    Nodebase *function_body;
+
+    //变量声明
+    Nodebase *declvar;
+    std::vector<char *>declinit;
+
+
+    //function
 };
 
 //表达式和语句节点
 class Expression_Statement_node : public Nodebase {
 public:
-    Expression_Statement_node(NODE_TYPE tp,Token *tk):
-        Nodebase(tp,tk){}
-    Nodebase *lhs;//left-hand
-    Nodebase *rhs;//right-hand
+    Expression_Statement_node(NODE_TYPE tp, Token *tk, Type *dt = nullptr) :
+            Nodebase(tp, tk, dt){}
+    Data_type type;
 
-    //if (cond) body else else_body
-    //for (init; cond;inc)
-    //while (cond) body
-    //do body while(cond)
-    //switch (cond) body
-    //case val : body
-    Nodebase *cond;
-    Nodebase *body;
-    Nodebase *else_body;
-    Nodebase *init;
-    Nodebase *inc;
+    union{
+        long double val;//number, char, bool的值
+        struct  {// 字符串的值
+            char *sval;
+        };
+        struct {//二元运算
+            Expression_Statement_node *lhs;//left-hand
+            Expression_Statement_node *rhs;//right-hand
+        };
+        struct {//一元
+            Expression_Statement_node *operand;
+        };
+        //if (cond) body else else_body
+        //for (init; cond;inc)
+        //while (cond) ody
+        //do body while(cond)
+        //switch (cond) body
+        //case val : body
+        struct {
+            Nodebase *cond;
+            Nodebase *body;
+            Nodebase *else_body;
+            Nodebase *init;
+            Nodebase *inc;
+        };
+        Nodebase *returnval;//返回值
+        struct {//struct
+            struct Node *struc;
+            char *field;
+            Type *fieldtype;
+        };
+    };
 
-    Var *var;//变量
-    long double val;//值
+    ~Expression_Statement_node() = default;
 };
+
+
+Nodebase *get_AST();
 
 #endif
