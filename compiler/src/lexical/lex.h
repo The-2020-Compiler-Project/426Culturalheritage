@@ -80,7 +80,7 @@ enum Token_type {
     TK_SIZEOF,     // "sizeof"
     TK_ALIGNOF,    // "_Alignof"
     TK_TYPEOF,     // "typeof"
-    TK_PARAM,      // Function-like macro parameter
+    TK_PARAM,      // FunctionDecl-like macro parameter
     TK_EOF,        // End marker
 };
 

@@ -1,11 +1,12 @@
-struct aa a_1;
 number a = 0 , b;
+number c(){}
+/*
 string c = "abcd";
 char d = 'e';
 char *f = &d;
 struct s{
  array[10] of number a;
-}
+};
 
 struct aa{
     struct aa *next;
@@ -14,6 +15,7 @@ struct aa{
 
 
 number main(){
+struct aa a_1;
 	number aaa = 1,bbb;
 	array[5] of array[10] of number ccc;
 	a_1.next = 1;
@@ -23,3 +25,4 @@ number main(){
 	}
 	return 0;
 }
+*/

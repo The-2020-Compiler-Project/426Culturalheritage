@@ -42,7 +42,7 @@ enum NODE_TYPE {
     ND_XOR = '^',
     ND_NUM = 256, // Number literal
     ND_STRUCT,    // Struct
-    ND_DECL,      // declaration
+    ND_TYPEDECL,      // declaration //变量声明
     ND_VARDEF,    // Variable definition
     ND_VARREF,    // Variable reference
     ND_CAST,      // Cast
@@ -76,8 +76,8 @@ enum NODE_TYPE {
     ND_XOR_EQ,     // ^=
     ND_OR_EQ,      // |=
     ND_RETURN,    // "return"
-    ND_CALL,      // Function call
-    ND_FUNC,      // Function definition
+    ND_CALL,      // FunctionDecl call
+    ND_FUNC,      // FunctionDecl definition //函数定义
     ND_COMP_STMT, // Compound statement
     ND_EXPR_STMT, // Expression statement
     ND_NULL,      // Null statement
@@ -106,10 +106,10 @@ struct Type {
     int size;
 
     //Pointer
-    Type *ptr_to;
+    Type *ptr_to = nullptr;
 
     //Array
-    Type *array_of;
+    Type *array_of = nullptr;
     int len;
 
     //Struct
@@ -118,7 +118,7 @@ struct Type {
     //int alignof;
 
     //function
-    Type *returning;
+    Type *returning = nullptr;
 };
 
 
@@ -156,16 +156,19 @@ public:
     std::vector<Nodebase *> stmts;
     NODE_TYPE nodetype;
     Type *type;
+    const char *type_name;
     Token *tok;
 
-    Nodebase(NODE_TYPE nt, Token *tk, Type *t = nullptr) :
+    Nodebase(NODE_TYPE nt, Token *tk, Type *t = nullptr, const char *tn = "") :
             type(t),
             nodetype(nt),
-            tok(tk) {}
+            tok(tk),
+            type_name(tn) {}
 
-    Nodebase(NODE_TYPE nt, const char *Name, Type *t = nullptr) :
+    Nodebase(NODE_TYPE nt, const char *Name, Type *t = nullptr, const char *tn = "") :
             type(t),
-            nodetype(nt) {
+            nodetype(nt),
+            type_name(tn) {
         tok = new Token;
         tok->Name = Name;
     };
@@ -182,39 +185,48 @@ public:
     virtual ~Nodebase() = default;
 };
 
+class Expression_Statement_Node;
+
 //声明节点
 class Declaration_node : public Nodebase {
 public:
-    std::vector<char *>parms;//形参
-    Declaration_node(NODE_TYPE nt,Token *tk, Type *dt = nullptr, Nodebase *pam = nullptr, Nodebase *body = nullptr) :
-            Nodebase(nt, tk, dt)
-            {}
+    Declaration_node(NODE_TYPE nt, Token *tk, const char *tn = "") :
+            Nodebase(nt, tk, nullptr, tn) {}
+
+    Declaration_node(NODE_TYPE nt, Token *tk, Type *t) :
+            Nodebase(nt, tk, t) {}
 
     //函数声明或调用
-    Type *ftype;//函数返回值类型
-    std::vector<char *>args;//实参
+    //函数类型 type
+    //返回值类型 type->returning
+    std::vector<Declaration_node *> parms;//形参
+    std::vector<Nodebase *> args;//实参
     Nodebase *fptr;//函数指针
-    std::vector<char *>localvars;
-    Nodebase *function_body;
+    std::vector<char *> localvars;
+    //函数体是Nodebase的stmts
+    //std::vector<Nodebase *> function_body;
 
     //变量声明
     Nodebase *declvar;
-    std::vector<char *>declinit;
+    std::vector<char *> declinit;
 
+    //类型声明
+    const char *tname;
+    //std::vector<Nodebase>
 
-    //function
 };
 
 //表达式和语句节点
 class Expression_Statement_node : public Nodebase {
 public:
-    Expression_Statement_node(NODE_TYPE tp, Token *tk, Type *dt = nullptr) :
-            Nodebase(tp, tk, dt){}
+    Expression_Statement_node(NODE_TYPE tp, Token *tk, Type *dt = nullptr, const char *tn = "") :
+            Nodebase(tp, tk, dt, tn) {}
+
     Data_type type;
 
-    union{
+    union {
         long double val;//number, char, bool的值
-        struct  {// 字符串的值
+        struct {// 字符串的值
             char *sval;
         };
         struct {//二元运算
