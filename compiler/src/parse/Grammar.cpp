@@ -1133,23 +1133,17 @@ void IfExpression() {
     }
 }
 
+
 void WhileExpression() {
-    if ((updateCurrentToken()).token_type == TK_LEFTPAR) {
-        while (currentToken.token_type != TK_RIGHTPAR) {
-            Expression();
-        }
-        if ((updateCurrentToken()).token_type == TK_LEFTBRACE) {
-            updateCurrentToken();
-            while (currentToken.token_type != TK_RIGHTBRACE) {
-                ControlStream();
-            }
-        } else {
-            cout << "Wrong While function!75" << endl;
-            //终止
-        }
-    } else {
-        cout << "Wrong While function!77" << endl;
-        //终止
+    updateCurrentToken();
+    expect(TK_LEFTPAR, "Has no leftpar");
+    while (currentToken.token_type != TK_RIGHTPAR) {
+        Expression();
+    }
+    expect(TK_RIGHTPAR);
+    expect(TK_LEFTBRACE, "Wrong While function!75");
+    while (currentToken.token_type != TK_RIGHTBRACE) {
+        ControlStream();
     }
 }
 
