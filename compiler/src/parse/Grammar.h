@@ -5,7 +5,12 @@
 #ifndef COMPILER_GRAMMAR_H
 #define COMPILER_GRAMMAR_H
 
-void GrammarAnalysis(Token token);//语法分析
+#include "lex.h"
+#include "parse.h"
+
+Nodebase *syntax();
+
+void Program();//语法分析
 void VariableSetting();//变量声明
 int ExceptStructOrArray();//判断是否为除struct以外的类型
 int VariableName();//变量名
@@ -24,7 +29,7 @@ void ArraySetting();
 
 void PointSetting();
 
-void Function();
+void FunctionDecl(Type *returning, Token *tok);
 
 int IfType();
 
@@ -38,6 +43,8 @@ void WhileExpression();
 
 void IfParameter();
 
-void Parameter();
+void addParameter(Declaration_node *func);
+
+void variableDef(Type *t, Token *var, Nodebase *);
 
 #endif //COMPILER_GRAMMAR_H

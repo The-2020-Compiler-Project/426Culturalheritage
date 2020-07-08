@@ -2,6 +2,8 @@
 #include "parse.h"
 #include <cstring>
 #include "lex.h"
+
+
 Type *type_void = new Type{ VOID, 0};
 Type *type_bool = new Type{ BOOL, 1};
 Type *type_char = new Type{ CHAR, 1};
@@ -47,7 +49,7 @@ Nodebase *get_AST(){
 
     Nodebase *program = new Nodebase(ND_PROG,"Program start!");
 
-    program->stmts.push_back(new Declaration_node(ND_DECL,a,type_number));
+    program->stmts.push_back(new Declaration_node(ND_VARDEF, a, type_number));
 
 
     auto _equ = 
@@ -78,28 +80,27 @@ Nodebase *get_AST(){
 
     Token *j = new Token;//return
     i = new char[8];
-    strcpy(i,"return");
+    strcpy(i, "return");
     j->Name = i;
 
     Token *k = new Token;//+
     i = new char[8];
-    strcpy(i,"*");
+    strcpy(i, "*");
     k->Name = i;
 
 
-
-    auto _main = new Declaration_node(ND_FUNC,g);
-    _main->stmts.push_back(new Declaration_node(ND_DECL,f));
-    auto _equ2 = new Expression_Statement_node(ND_ASSIGN,c);
-    _equ2->lhs = new Expression_Statement_node(ND_VARREF,f);
-    _equ2->rhs = new Expression_Statement_node(ND_NUM,d);
+    auto _main = new Declaration_node(ND_FUNC, g, "number");
+    _main->stmts.push_back(new Declaration_node(ND_VARDEF, f, "number"));
+    auto _equ2 = new Expression_Statement_node(ND_ASSIGN, c);
+    _equ2->lhs = new Expression_Statement_node(ND_VARREF, f);
+    _equ2->rhs = new Expression_Statement_node(ND_NUM, d);
     _main->stmts.push_back(_equ2);
 
-    auto _ret =  new Expression_Statement_node(ND_RETURN,j,type_void);
-    auto _3 = new Expression_Statement_node(ND_ADD,k,type_number);
-    _3->lhs = new Expression_Statement_node(ND_VARREF,b,type_number);
-    _3->rhs = new Expression_Statement_node(ND_MUL,k,type_number);
-    _3->rhs->lhs = new Expression_Statement_node(ND_NUM,d,type_number);
+    auto _ret = new Expression_Statement_node(ND_RETURN, j, type_void);
+    auto _3 = new Expression_Statement_node(ND_ADD, k, type_number);
+    _3->lhs = new Expression_Statement_node(ND_VARREF, b, type_number);
+    _3->rhs = new Expression_Statement_node(ND_MUL, k, type_number);
+    _3->rhs->lhs = new Expression_Statement_node(ND_NUM, d, type_number);
     _3->rhs->rhs = new Expression_Statement_node(ND_VARREF,f,type_number);
     _ret->returnval = _3;
     _main->stmts.push_back(_ret);

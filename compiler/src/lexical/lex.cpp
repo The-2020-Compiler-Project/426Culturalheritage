@@ -595,7 +595,7 @@ void Scanner() { //根据DFA的状态转换图设计
             goto eof;
         }
     } else { //不能被以上词法分析识别，则出错。
-        printf("error：there is no exist %c \n", ch);
+        cout << "error：there is no exist character:" << ch << "%c .\nIn line " << line_num;
         exit(1);
     }
     resourceProject.unget();
