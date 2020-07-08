@@ -126,8 +126,9 @@ void filterResource() {
                     colomn_num = 0;
                 }
             }
+            resourceProject >> last_char;
             if (!resourceProject) {
-                cerr << "Error: comment doesn't end" << "\nline_num:" << line_num;//报错
+                cerr << "Error: comment.txt doesn't end" << "\nline_num:" << line_num;//报错
                 exit(1);
             }
         } else {
@@ -168,7 +169,11 @@ void Scanner() { //根据DFA的状态转换图设计
         }
     }
     if (!resourceProject) {
-        goto eof;
+        syn = TK_EOF; //种别码为0
+        token[0] = 'E';
+        token[1] = 'O';
+        token[2] = 'F';
+        return;
     }
     if (ch == '/') {
         resourceProject.unget();
