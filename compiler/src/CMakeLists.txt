@@ -11,7 +11,7 @@ include_directories(parse)
 add_subdirectory(semantic)
 include_directories(semantic)
 
-add_executable(compiler_main main.cpp)
+add_executable(compiler_main main.cpp )
 target_link_libraries(compiler_main big_int)
 target_link_libraries(compiler_main lexical)
 target_link_libraries(compiler_main parse)

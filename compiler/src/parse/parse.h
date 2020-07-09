@@ -61,7 +61,7 @@ enum NODE_TYPE {
     ND_NE,         // !=
     ND_LE,         // <=
     ND_GE,         // >=
-    ND_LOGOR,      // ||
+    ND_LOGOR,      // f||
     ND_LOGAND,     // &&
     ND_SHL,        // <<
     ND_SHR,        // >>

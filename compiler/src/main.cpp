@@ -6,10 +6,15 @@
 #include "semantic.h"
 
 int main() {
-    const char *path = R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
-    Init_lexer(path);
+    //const char *path = R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
+    //Init_lexer(path);
 
-    auto AST = syntax();
+    //auto AST = syntax();
+    auto program = get_AST();
+
+    auto q = treeToQuad( program );
+
+    q->print();
 
 
     displayAST(AST);
