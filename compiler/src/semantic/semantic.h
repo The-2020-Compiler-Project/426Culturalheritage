@@ -11,7 +11,7 @@
 #include <iostream>
 #include "parse.h"
 #include "lex.h"
-#include "quadruple.h"
+#include "../quadruple/quadruple.h"
 #include "../tables/tables.h"
 
 // 返回变量
@@ -26,7 +26,7 @@ public:
 };
 int templeNum::count = 0;
 // 语法树生成四元式
-Quadruple *treeToQuad( constTable *CT,idenTable *IT );
+Quadruple *treeToQuad( Nodebase *p );
 
 // 字符串(name)转double
 double strToDouble( const char *s );
@@ -38,7 +38,7 @@ char* doubleToStr( double n );
 void FuncDeclare( Quadruple *quadruple, Declaration_node *p );
 
 // 获取数值
-double getNumber( Quadruple *quadruple, Expression_Statement_Node *p,idenTable *IT );
+double getNumber( Quadruple *quadruple, Expression_Statement_Node *p );
 
 // 遍历语法树
 void traverse( Quadruple *quadruple, Nodebase *p );

@@ -45,7 +45,6 @@ double getNumber( Expression_Statement_node *p ){
         // 算术符号
         if( !strcmp( p->getName(),"*" ) ){
             // 乘号
-            //quadruple->addQuadruple( ND_MUL, p->lhs->getName(), p->rhs->getName(), )
             return getNumber( p->lhs ) * getNumber(p->rhs);
         } else if( !strcmp( p->getName(),"/" ) ){
             // 除号
@@ -68,29 +67,49 @@ void Assignment( Quadruple *quadruple, Expression_Statement_node *p ){
     if( IT->exist((char *) lhs->getName()) ){
         value = getNumber( rhs );
     } else {
-        cout<<"Identifier not found in IT"<<endl;
+        std::cout<<"Identifier not found in IT"<<std::endl;
         return;
     }
     // 生成四元式
-    quadruple->addQuadruple(ND_ASSIGN,doubleToStr(value),"_",lhs->getName());
+    quadruple->addQuadruple("=",doubleToStr(value),"_",lhs->getName());
     // 标识符表赋值
-    IT->idTable[ const_cast<char*>(lhs->getName())]=value;
+    IT->idTable[ const_cast<char*>(lhs->getName()) ]=value;
 }
 
 // 递归 函数定义
 void FuncDeclare( Quadruple *quadruple, Declaration_node *p ){
-    quadruple->addQuadruple( ND_FUNC,"","",p->getName() );
+    quadruple->addQuadruple( "function","","",p->getName() );
     traverse(quadruple,p);
 }
 
 // Return语句
 void RT( Quadruple *quadruple, Expression_Statement_node *p ){
-    double  retValue = getNumber( reinterpret_cast<Expression_Statement_node *>(p) );
-    quadruple->addQuadruple( ND_RETURN,"","", doubleToStr(retValue) );
+    double retValue = getNumber(dynamic_cast<Expression_Statement_node *>(p->returnval));
+    quadruple->addQuadruple( "return","","", doubleToStr(retValue) );
 }
 
 void IF( Quadruple *quadruple, Expression_Statement_node *p ){
-    //
+    // IF语句
+    Expression_Statement_node *cond = dynamic_cast<Expression_Statement_node *>(p->cond);
+    if( cond->nodetype == ND_EQ ){
+        // 等于
+
+    } else if( cond->nodetype == ND_LE ){
+        //小于等于
+    } else if( cond->nodetype == ND_GE ){
+        //大于等于
+    } else if( cond->nodetype == ND_LOGAND ){
+        // AND
+    } else if( cond->nodetype == ND_LOGOR ){
+        // OR
+    }
+
+}
+
+void WH( Quadruple *quadruple, Expression_Statement_Node *p ){
+    // WH语句
+    Expression_Statement_node *cond = dynamic_cast<Expression_Statement_node *>(p->cond);
+
 }
 
 //遍历树更新四元式
@@ -118,7 +137,7 @@ void traverse( Quadruple *quadruple, Nodebase *p ){
             statementNode = dynamic_cast<Expression_Statement_node*>(p);
             if( !statementNode->returnval){
                 // 函数没有返回值
-                quadruple->addQuadruple( ND_RETURN,"","","void" );
+                quadruple->addQuadruple( "return","","","void" );
             } else {
                 // 函数有返回值
                 RT( quadruple,statementNode );
@@ -127,12 +146,13 @@ void traverse( Quadruple *quadruple, Nodebase *p ){
             // IF
             statementNode = dynamic_cast<Expression_Statement_node*>(p);
             IF( quadruple,statementNode );
+        } else if ( cur->nodetype == ND_DO_WHILE ){
+
         }
     }
 }
 
-Quadruple *treeToQuad(){
-    Nodebase *p = get_AST();
+Quadruple *treeToQuad( Nodebase *p ){
     auto quadruple = new Quadruple();
 
     if( p->nodetype != ND_PROG ){

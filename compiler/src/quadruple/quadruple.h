@@ -9,11 +9,13 @@
 using namespace std;
 
 struct Quad{
-    NODE_TYPE op;
+    string op;
     string src1;
     string src2;
     string dst;
-    bool global;
+    int f;
+    int s;
+    int t;
 };
 
 class Quadruple{
@@ -21,9 +23,9 @@ public:
     Quadruple();
     vector<Quad *> quadrupleList;
 
-    void addQuadruple(NODE_TYPE op, string src1, string src2, string dst, bool global = false);
+    void addQuadruple(string op, string src1, string src2, string dst, int f=0, int s=0, int t=0);
     void print();
-    int length();
+    int length() const;
 
 private:
 };
