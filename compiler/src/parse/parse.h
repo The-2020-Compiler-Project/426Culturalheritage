@@ -189,6 +189,7 @@ public:
 class Expression_Statement_Node;
 
 //声明节点
+//NODE_TYPE 为 VAR_DEF,FUNC,STRUCT,TYPEDEF
 class Declaration_node : public Nodebase {
 public:
     Declaration_node(NODE_TYPE nt, Token *tk, const char *tn = "") :
@@ -237,8 +238,8 @@ public:
             Expression_Statement_node *operand;//TODO 弃用?
         };
         //if (cond) body else else_body
-        //for (init; cond;inc)
-        //while (cond) ody
+        //for (init; cond;inc) body
+        //while (cond) body
         //do body while(cond)
         //switch (cond) body
         //case val : body

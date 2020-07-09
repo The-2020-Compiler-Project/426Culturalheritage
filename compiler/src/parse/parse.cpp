@@ -1,4 +1,5 @@
 //获得语法树
+/*
 #include "parse.h"
 #include <cstring>
 #include "lex.h"
@@ -52,7 +53,7 @@ Nodebase *get_AST(){
     program->stmts.push_back(new Declaration_node(ND_VARDEF, a, type_number));
 
 
-    auto _equ = 
+    auto _equ =
         new Expression_Statement_node(ND_ASSIGN,c);
 
     _equ->lhs = new Expression_Statement_node(ND_VARREF,b);
@@ -121,7 +122,8 @@ Nodebase *get_AST(){
      *                                  /  \
      *                                 3    b
      *
-     */
+     *//*
 
     return program;
 }
+*/

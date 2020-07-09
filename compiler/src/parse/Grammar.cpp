@@ -21,7 +21,6 @@ static std::unordered_map<string, Type *> types{
 };
 static Token currentToken;
 #define currentTokenAddr &Token_list.back()
-//TODO static int VariableOutcome;///////////////////加报错输出
 static Token tempToken;
 
 Expression_Statement_node *
@@ -852,7 +851,7 @@ void ArraySetting() {
         }
     }
     if (currentToken.token_type == TK_NUMBERTYPE || currentToken.token_type == TK_CHARTYPE ||
-            currentToken.token_type == TK_STRINGTYPE || currentToken.token_type == TK_BOOL) {
+        currentToken.token_type == TK_STRINGTYPE || currentToken.token_type == TK_BOOL) {
         if ((updateCurrentToken()).token_type == TK_IDENT) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
                 token_error(currentTokenAddr, "Wrong array setting!36");
@@ -887,8 +886,8 @@ void StructSetting() {
     if (currentToken.token_type == TK_ASSIGN) {
         updateCurrentToken();
         if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_CHAR ||
-                currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT ||
-                currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE) {
+            currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT ||
+            currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
                 token_error(currentTokenAddr, "Wrong struct setting!43");
                 //终止
@@ -911,8 +910,8 @@ void StructSetting() {
             //判断是否属于值
             updateCurrentToken();
             if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_CHAR ||
-                    currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT ||
-                    currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE) {
+                currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT ||
+                currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE) {
                 if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
                     token_error(currentTokenAddr, "Wrong struct setting!43");
                     //终止
@@ -1087,136 +1086,210 @@ Nodebase *ControlStream(Nodebase *env) {
             }
             expect(TK_SEMICOLON);
         }
-    } else {
-        switch (currentToken.token_type) {
-            /*
-        case TK_IF: {
-            Node *node = new_node(ND_IF, t);
-            expect('(');
-            node->cond = expr();
-            expect(')');
+        return nullptr;
+    } else {//表达式与语句
+        Token *t = currentTokenAddr;
+        switch (t->token_type) {
+            case TK_IF: {//if
+                updateCurrentToken();
+                auto node = new Expression_Statement_node(ND_IF, t);
+                expect(TK_LEFTPAR);
+                node->cond = expr();
+                expect(TK_RIGHTPAR);
 
-            node->then = stmt();
-
-            if (consume(TK_ELSE))
-                node->els = stmt();
-            return node;
-        }
-            case TK_FOR: {
-                Node *node = new_node(ND_FOR, t);
-                expect('(');
-                env = new_env(env);
-                vec_push(breaks, node);
-                vec_push(continues, node);
-
-                if (is_typename())
-                    node->init = declaration();
-                else if (!consume(';'))
-                    node->init = expr_stmt();
-
-                if (!consume(';')) {
-                    node->cond = expr();
-                    expect(';');
+                node->body = new Expression_Statement_node(ND_COMP_STMT, t);
+                if (consume(TK_LEFTBRACE)) {
+                    while (!consume(TK_RIGHTBRACE)) {
+                        auto st = ControlStream(node->body);
+                        if (st != nullptr) {
+                            node->body->stmts.push_back(st);
+                        }
+                    }
+                } else {
+                    auto st = ControlStream(node->body);
+                    if (st != nullptr) {
+                        node->body->stmts.push_back(st);
+                    }
                 }
 
-                if (!consume(')')) {
-                    node->inc = expr();
-                    expect(')');
+                if (consume(TK_ELSE)) {
+                    node->else_body = new Expression_Statement_node(ND_COMP_STMT, t);
+                    if (consume(TK_LEFTBRACE)) {
+                        while (!consume(TK_RIGHTBRACE)) {
+                            auto st = ControlStream(node->else_body);
+                            if (st != nullptr) {
+                                node->else_body->stmts.push_back(st);
+                            }
+                        }
+                    } else {
+                        auto st = ControlStream(node->else_body);
+                        if (st != nullptr) {
+                            node->else_body->stmts.push_back(st);
+                        }
+                    }
+
                 }
-
-                node->body = stmt();
-
-                vec_pop(breaks);
-                vec_pop(continues);
-                env = env->prev;
                 return node;
-            }*/
-            /*
-         case TK_WHILE: {
-             Node *node = new_node(ND_FOR, t);
-             vec_push(breaks, node);
-             vec_push(continues, node);
+            }
+            case TK_FOR: {
+                updateCurrentToken();
+                auto node = new Expression_Statement_node(ND_FOR, t);
+                expect(TK_LEFTPAR);
+                //env = new_env(env);
+                //vec_push(breaks, node);
+                //vec_push(continues, node);
 
-             expect('(');
-             node->cond = expr();
-             expect(')');
-             node->body = stmt();
+                /*if (is_typename())
+                    node->init = declaration();
+                else */if (!consume(TK_SEMICOLON)) {
+                    node->init = expr();
+                    expect(TK_SEMICOLON);
+                }
 
-             vec_pop(breaks);
-             vec_pop(continues);
-             return node;
+                if (!consume(TK_SEMICOLON)) {
+                    node->cond = expr();
+                    expect(TK_SEMICOLON);
+                }
 
-         }
-             */
-            /*
-         case TK_DO: {
-             Node *node = new_node(ND_DO_WHILE, t);
-             vec_push(breaks, node);
-             vec_push(continues, node);
+                if (!consume(TK_RIGHTPAR)) {
+                    node->inc = expr();
+                    expect(TK_RIGHTPAR);
+                }
 
-             node->body = stmt();
-             expect(TK_WHILE);
-             expect('(');
-             node->cond = expr();
-             expect(')');
-             expect(';');
+                node->body = new Expression_Statement_node(ND_COMP_STMT, t);
+                if (consume(TK_LEFTBRACE)) {
+                    while (!consume(TK_RIGHTBRACE)) {
+                        auto st = ControlStream(node->body);
+                        if (st != nullptr) {
+                            node->body->stmts.push_back(st);
+                        }
+                    }
+                } else {
+                    auto st = ControlStream(node->body);
+                    if (st != nullptr) {
+                        node->body->stmts.push_back(st);
+                    }
+                }
 
-             vec_pop(breaks);
-             vec_pop(continues);
-             return node;
-         }
-         case TK_SWITCH: {
-             Node *node = new_node(ND_SWITCH, t);
-             node->cases = new_vec();
+                //vec_pop(breaks);
+                //vec_pop(continues);
+                //env = env->prev;
+                return node;
+            }
+            case TK_WHILE: {
+                updateCurrentToken();
+                auto node = new Expression_Statement_node(ND_FOR, t);
+                //vec_push(breaks, node);
+                //vec_push(continues, node);
 
-             expect('(');
-             node->cond = expr();
-             expect(')');
+                expect(TK_LEFTPAR);
+                node->cond = expr();
+                expect(TK_RIGHTPAR);
+                node->body = new Expression_Statement_node(ND_COMP_STMT, t);
+                if (consume(TK_LEFTBRACE)) {
+                    while (!consume(TK_RIGHTBRACE)) {
+                        auto st = ControlStream(node->body);
+                        if (st != nullptr) {
+                            node->body->stmts.push_back(st);
+                        }
+                    }
+                } else {
+                    auto st = ControlStream(node->body);
+                    if (st != nullptr) {
+                        node->body->stmts.push_back(st);
+                    }
+                }
 
-             vec_push(breaks, node);
-             vec_push(switches, node);
-             node->body = stmt();
-             vec_pop(breaks);
-             vec_pop(switches);
-             return node;
-         }
-         case TK_CASE: {
-             if (switches->len == 0)
-                 bad_token(t, "stray case");
-             Node *node = new_node(ND_CASE, t);
-             node->val = const_expr();
-             expect(':');
-             node->body = stmt();
+                //vec_pop(breaks);
+                //vec_pop(continues);
+                return node;
 
-             Node *n = vec_last(switches);
-             vec_push(n->cases, node);
-             return node;
-         }
-         case TK_BREAK: {
-             if (breaks->len == 0)
-                 bad_token(t, "stray break");
-             Node *node = new_node(ND_BREAK, t);
-             node->target = vec_last(breaks);
-             return node;
-         }
-         case TK_CONTINUE: {
-             if (continues->len == 0)
-                 bad_token(t, "stray continue");
-             Node *node = new_node(ND_CONTINUE, t);
-             node->target = vec_last(breaks);
-             return node;
-         }*/
+            }
+                /*
+             case TK_DO: {
+        updateCurrentToken();
+                 Node *node = new_node(ND_DO_WHILE, t);
+                 vec_push(breaks, node);
+                 vec_push(continues, node);
+
+                 node->body = stmt();
+                 expect(TK_WHILE);
+                 expect('(');
+                 node->cond = expr();
+                 expect(')');
+                 expect(';');
+
+                 vec_pop(breaks);
+                 vec_pop(continues);
+                 return node;
+             }
+             case TK_SWITCH: {
+        updateCurrentToken();
+                 Node *node = new_node(ND_SWITCH, t);
+                 node->cases = new_vec();
+
+                 expect('(');
+                 node->cond = expr();
+                 expect(')');
+
+                 vec_push(breaks, node);
+                 vec_push(switches, node);
+                 node->body = stmt();
+                 vec_pop(breaks);
+                 vec_pop(switches);
+                 return node;
+             }
+             case TK_CASE: {
+        updateCurrentToken();
+                 if (switches->len == 0)
+                     bad_token(t, "stray case");
+                 Node *node = new_node(ND_CASE, t);
+                 node->val = const_expr();
+                 expect(':');
+                 node->body = stmt();
+
+                 Node *n = vec_last(switches);
+                 vec_push(n->cases, node);
+                 return node;
+             }
+             case TK_BREAK: {
+        updateCurrentToken();
+                 if (breaks->len == 0)
+                     bad_token(t, "stray break");
+                 Node *node = new_node(ND_BREAK, t);
+                 node->target = vec_last(breaks);
+                 return node;
+             }
+             case TK_CONTINUE: {
+        updateCurrentToken();
+                 if (continues->len == 0)
+                     bad_token(t, "stray continue");
+                 Node *node = new_node(ND_CONTINUE, t);
+                 node->target = vec_last(breaks);
+                 return node;
+             }*/
             case TK_RETURN: {
-                auto node = new Expression_Statement_node(ND_RETURN, currentTokenAddr, env->type->returning);
+                updateCurrentToken();
+                auto node = new Expression_Statement_node(ND_RETURN, currentTokenAddr);
                 consume(TK_RETURN);
                 node->returnval = expr();
                 expect(TK_SEMICOLON);
                 return node;
             }
-                /*case TK_LEFTBRACE:
-                    return compound_stmt();*/
+            case TK_LEFTBRACE: {
+                updateCurrentToken();
+                auto node = new Expression_Statement_node(ND_COMP_STMT, t);
+                while (!consume(TK_RIGHTBRACE)) {
+                    auto st = ControlStream(node->body);
+                    if (st != nullptr) {
+                        node->body->stmts.push_back(st);
+                    }
+                }
+                return node;
+            }
             case TK_SEMICOLON:
                 consume(TK_SEMICOLON);
+                return nullptr;
             default:
                 return expr();
         }
@@ -1276,7 +1349,6 @@ Nodebase *ControlStream(Nodebase *env) {
     token_error(currentTokenAddr, "Wrong function!71");
 //终止
      */
-    return nullptr;
 }
 
 int ExceptStructOrArray() {
