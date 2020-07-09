@@ -392,6 +392,10 @@ Expression_Statement_node *assign() {
         return new_assign_eq(ND_OR, t, lhs, assign());
     return lhs;
 }
+/*
+ *  b -> assignb |assignb , expr
+ *  assignb -> conditionb | conditionb assign assignb
+ */
 
 Expression_Statement_node *expr() {
     Expression_Statement_node *lhs = assign();

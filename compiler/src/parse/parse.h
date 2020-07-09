@@ -261,6 +261,6 @@ public:
 };
 
 
-void displayAST(Nodebase *, int x = 0);
+void displayAST(Nodebase *, int x = 1);
 
 #endif

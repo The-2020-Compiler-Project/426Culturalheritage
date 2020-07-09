@@ -7,10 +7,25 @@
 
 using namespace std;
 
-void binaryDisplay(Nodebase *root, int depth) {
+void binaryDisplay(Nodebase *root, int depth, const char *type) {
     auto i = dynamic_cast<Expression_Statement_node *>(root);
-    displayAST(i->lhs);
-    displayAST(i->rhs);
+    displayAST(i->lhs, depth + 1);
+    int t1 = depth;
+    while (t1-- + 2) {
+        cout << " ";
+    }
+    cout << "/\n";
+    t1 = depth;
+    while (--t1) {
+        cout << " ";
+    }
+    cout << type << endl;
+    t1 = depth;
+    while (t1-- + 2) {
+        cout << " ";
+    }
+    cout << "\\\n";
+    displayAST(i->rhs, depth + 1);
 }
 
 void displayAST(Nodebase *root, int depth) {
@@ -19,170 +34,170 @@ void displayAST(Nodebase *root, int depth) {
         case ND_QUESTIONMARK:
             //binary operator
         case ND_SEMICOLON:
-            cout << "SEMICOLON" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SEMICOLON");
+
             break;
         case ND_LEFTPAR:
-            cout << "LEFTPAR" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LEFTPAR");
+
             break;
         case ND_RIGHTPAR:
-            cout << "RIGHTPAR" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "RIGHTPAR");
+
             break;
         case ND_COMMA:
-            cout << "COMMA" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "COMMA");
+
             break;
         case ND_SHARP:
-            cout << "SHARP" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SHARP");
+
             break;
         case ND_TLIDE:
-            cout << "TLIDE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "TLIDE");
+
             break;
         case ND_LEFTBRKT:
-            cout << "LEFTBRKT" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LEFTBRKT");
+
             break;
         case ND_RIGHTBRKT:
-            cout << "RIGHTBRKT" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "RIGHTBRKT");
+
             break;
         case ND_LEFTBRACE:
-            cout << "LEFTBRACE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LEFTBRACE");
+
             break;
         case ND_RIGHTBRACE:
-            cout << "RIGHTBRACE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "RIGHTBRACE");
+
             break;
         case ND_DOT:
-            cout << "DOT" << endl;
-            cout << dynamic_cast<Expression_Statement_node *>(root)->getName() << "  "
-                 << dynamic_cast<Expression_Statement_node *>(root)->struc->getName() << "  "
+            cout << "DOT"
+                 << "  "
+                 << "  "
                  << dynamic_cast<Expression_Statement_node *>(root)->field;
             break;
         case ND_COLON:
-            cout << "COLON" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "COLON");
+
             break;
         case ND_LT:
-            cout << "LT" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LT");
+
             break;
         case ND_GT:
-            cout << "GT" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "GT");
+
             break;
         case ND_ASSIGN:
-            cout << "ASSIGN" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "ASSIGN");
+
             break;
         case ND_AND:
-            cout << "AND" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "AND");
+
             break;
         case ND_OR:
-            cout << "OR" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "OR");
+
             break;
         case ND_ADD:
-            cout << "ADD" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "ADD");
+
             break;
         case ND_SUB:
-            cout << "SUB" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SUB");
+
             break;
         case ND_MUL:
-            cout << "MUL" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "MUL");
+
             break;
         case ND_DIV:
-            cout << "DIV" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "DIV");
+
             break;
         case ND_MOD:
-            cout << "MOD" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "MOD");
+
             break;
         case ND_XOR :
-            cout << "XOR " << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "XOR ");
+
             break;
         case ND_EQ:
-            cout << "EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "EQ");
+
             break;
         case ND_NE:
-            cout << "NE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "NE");
+
             break;
         case ND_LE:
-            cout << "LE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LE");
+
             break;
         case ND_GE:
-            cout << "GE" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "GE");
+
             break;
         case ND_LOGOR:
-            cout << "LOGOR" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LOGOR");
+
             break;
         case ND_LOGAND:
-            cout << "LOGAND" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "LOGAND");
+
             break;
         case ND_SHL:
-            cout << "SHL" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SHL");
+
             break;
         case ND_SHR:
-            cout << "SHR" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SHR");
+
             break;
         case ND_MUL_EQ:
-            cout << "MUL_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "MUL_EQ");
+
             break;
         case ND_DIV_EQ:
-            cout << "DIV_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "DIV_EQ");
+
             break;
         case ND_MOD_EQ:
-            cout << "MOD_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "MOD_EQ");
+
             break;
         case ND_ADD_EQ:
-            cout << "ADD_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "ADD_EQ");
+
             break;
         case ND_SUB_EQ:
-            cout << "SUB_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SUB_EQ");
+
             break;
         case ND_SHL_EQ:
-            cout << "SHL_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SHL_EQ");
+
             break;
         case ND_SHR_EQ:
-            cout << "SHR_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "SHR_EQ");
+
             break;
         case ND_AND_EQ:
-            cout << "AND_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "AND_EQ");
+
             break;
         case ND_XOR_EQ:
-            cout << "XOR_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "XOR_EQ");
+
             break;
         case ND_OR_EQ:
-            cout << "OR_EQ" << endl;
-            binaryDisplay(root, depth + 1);
+            binaryDisplay(root, depth + 1, "OR_EQ");
+
             break;
 
             //unary
@@ -203,25 +218,18 @@ void displayAST(Nodebase *root, int depth) {
             break;
 
         case ND_NUM:
-            cout << root->getName() << endl;
-            break;
         case ND_CHAR:
-            cout << root->getName() << endl;
-            break;
         case ND_STR:
-            cout << root->getName() << endl;
-            break;
         case ND_STRUCT:
-            cout << root->getName() << endl;
-            break;
         case ND_TYPEDECL:
-            cout << root->getName() << endl;
-            break;
         case ND_VARDEF:
+        case ND_VARREF: {
+            int t1 = depth;
+            while (t1-- + 2) {
+                cout << " ";
+            }
             cout << root->getName() << endl;
-            break;
-        case ND_VARREF:
-            cout << root->getName() << endl;
+        }
             break;
         case ND_CAST:
             break;
