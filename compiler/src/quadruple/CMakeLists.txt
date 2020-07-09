@@ -8,4 +8,4 @@ set(SOURCE_FILES
         quadruple.cpp
         )
 
-add_library(quadrupleical STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(quadruple STATIC ${SOURCE_FILES} ${HEADER_FILES})

@@ -8,4 +8,4 @@ set(SOURCE_FILES
         tables.cpp
         )
 
-add_library(tablesical STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(tables STATIC ${SOURCE_FILES} ${HEADER_FILES})
