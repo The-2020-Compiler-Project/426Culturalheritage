@@ -249,7 +249,6 @@ public:
             Nodebase *init;
             Nodebase *inc;
         };
-        std::vector<Nodebase *> args;//实参
         Nodebase *returnval;//return 语句返回值或者是stmt_expr的值
         struct {//struct
             struct Node *struc;
@@ -257,6 +256,7 @@ public:
             Type *fieldtype;
         };
     };
+    std::vector<Nodebase *> args;//函数调用实参
 
     ~Expression_Statement_node() = default;
 };
