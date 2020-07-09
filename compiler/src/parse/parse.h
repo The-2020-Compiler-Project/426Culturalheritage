@@ -41,6 +41,7 @@ enum NODE_TYPE {
     ND_MOD = '%',
     ND_XOR = '^',
     ND_NUM = 256, // Number literal
+    ND_CHAR,      // char literal
     ND_STR,       // string literal
     ND_STRUCT,    // Struct
     ND_TYPEDECL,  // declaration //变量声明
@@ -250,7 +251,7 @@ public:
             Nodebase *init;
             Nodebase *inc;
         };
-        Nodebase *returnval;//return 语句返回值或者是stmt_expr的值
+        Nodebase *returnval;//return 语句返回值或者是表达式的值
         struct {//struct
             struct Node *struc;
             char *field;
@@ -263,6 +264,6 @@ public:
 };
 
 
-Nodebase *get_AST();
+void displayAST(Nodebase *);
 
 #endif

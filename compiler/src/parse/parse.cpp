@@ -1,9 +1,42 @@
 //获得语法树
-/*
-#include "parse.h"
 #include <cstring>
-#include "lex.h"
+#include "parse.h"
+#include "Grammar.h"
 
+void displayAST(Nodebase *root) {
+    switch (root->nodetype) {
+        case ND_SEMICOLON:
+        case ND_LEFTPAR:
+        case ND_RIGHTPAR:
+        case ND_COMMA:
+        case ND_SHARP:
+        case ND_TLIDE:
+        case ND_LEFTBRKT:
+        case ND_RIGHTBRKT:
+        case ND_LEFTBRACE:
+        case ND_RIGHTBRACE:
+        case ND_DOT:
+        case ND_COLON:
+        case ND_LT:
+        case ND_GT:
+        case ND_ASSIGN:
+        case ND_EX:
+        case ND_AND:
+        case ND_OR:
+        case ND_ADD:
+        case ND_SUB:
+        case ND_MUL:
+        case ND_DIV:
+        case ND_MOD:
+        case ND_XOR:
+
+        case ND_QUESTIONMARK:;
+    }
+}
+
+
+
+/*
 
 Type *type_void = new Type{ VOID, 0};
 Type *type_bool = new Type{ BOOL, 1};

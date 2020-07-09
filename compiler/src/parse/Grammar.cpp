@@ -107,6 +107,10 @@ Expression_Statement_node *primary() {
     if (t->token_type == TK_NUM)
         return new Expression_Statement_node(ND_NUM, t, getType("number"));//new_int_node(t->val, t);
 
+    if (t->token_type == TK_CHAR) {
+        return new Expression_Statement_node(ND_CHAR, t, getType("char"));//new_int_node(t->val, t);
+    }
+
     if (t->token_type == TK_STR)
         return new Expression_Statement_node(ND_STR, t, getType("string"));//string_literal(t);
 

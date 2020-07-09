@@ -1,5 +1,6 @@
 /*number a = 0 + (2 * c) , b;
 */
+char dsafjlksad = 'c';
 number c(number a,number b){
     number aa=(3*5)%2;
     return aa;
