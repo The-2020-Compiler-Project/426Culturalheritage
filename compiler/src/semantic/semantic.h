@@ -35,29 +35,29 @@ double strToDouble( const char *s );
 char* doubleToStr( double n );
 
 // 函数定义
-void FuncDeclare( Quadruple *quadruple, Declaration_node *p, constTable *CT, idenTable *IT );
+void FuncDeclare( Quadruple *quadruple, Declaration_node *p );
 
 // 获取数值
 double getNumber( Quadruple *quadruple, Expression_Statement_Node *p,idenTable *IT );
 
 // 遍历语法树
-void traverse( Quadruple *quadruple, Nodebase *p, constTable *CT, idenTable *IT );
+void traverse( Quadruple *quadruple, Nodebase *p );
 
 // 赋值语句
-void Assignment( Quadruple *quadruple, Expression_Statement_Node *p, constTable *CT, idenTable *IT );
+void Assignment( Quadruple *quadruple, Expression_Statement_Node *p );
 
 // 获取赋值语句右孩子数值
 double getNumber( Expression_Statement_Node *p );
 
 // IF语句
-void IF(  Quadruple *quadruple, Expression_Statement_Node *p, constTable *CT, idenTable *IT);
+void IF( Quadruple *quadruple, Expression_Statement_Node *p);
 
 // 函数定义
-void funDec( Quadruple *quadruple, Expression_Statement_Node *p, constTable *CT, idenTable *IT);
+void funDec( Quadruple *quadruple, Expression_Statement_Node *p);
 
 // While语句
-void WH(Quadruple *quadruple, Expression_Statement_Node *p, constTable *CT, idenTable *IT);
+void WH(Quadruple *quadruple, Expression_Statement_Node *p);
 
 // Return语句
-void RT( Quadruple *quadruple, Expression_Statement_Node *p, constTable *CT, idenTable *IT);
+void RT( Quadruple *quadruple, Expression_Statement_Node *p);
 #endif //COMPILER_SEMANTIC_H
