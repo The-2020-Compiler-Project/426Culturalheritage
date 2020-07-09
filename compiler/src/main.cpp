@@ -6,20 +6,16 @@
 #include "semantic.h"
 
 int main() {
-    //const char *path = R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
-    //Init_lexer(path);
+    const char *path = R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
+    Init_lexer(path);
 
-    //auto AST = syntax();
-    auto program = get_AST();
+    auto AST = syntax();
+    //auto program = get_AST();
 
-    auto q = treeToQuad( program );
-
-    q->print();
+    auto q = treeToQuad(AST);
 
 
     displayAST(AST);
-    auto q = treeToQuad(AST);
-
 
     std::ofstream four("FourStream", std::ios::out);
     q->print(four);
