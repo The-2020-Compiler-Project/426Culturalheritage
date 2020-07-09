@@ -15,7 +15,7 @@ include_directories(quadruple)
 add_subdirectory(tables)
 include_directories(tables)
 
-add_executable(compiler_main main.cpp quadruple/quadruple.cpp quadruple/quadruple.h semantic/semantic.cpp semantic/semantic.h tables/tables.cpp tables/tables.h)
+add_executable(compiler_main main.cpp )
 target_link_libraries(compiler_main big_int)
 target_link_libraries(compiler_main lexical)
 target_link_libraries(compiler_main parse)
