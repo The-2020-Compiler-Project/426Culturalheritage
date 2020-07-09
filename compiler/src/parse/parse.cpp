@@ -95,7 +95,6 @@ Nodebase *get_AST(){
     _equ2->lhs = new Expression_Statement_node(ND_VARREF, f);
     _equ2->rhs = new Expression_Statement_node(ND_NUM, d);
     _main->stmts.push_back(_equ2);
-
     auto _ret = new Expression_Statement_node(ND_RETURN, j, type_void);
     auto _3 = new Expression_Statement_node(ND_ADD, k, type_number);
     _3->lhs = new Expression_Statement_node(ND_VARREF, b, type_number);
