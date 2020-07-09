@@ -1,9 +1,264 @@
 //获得语法树
-/*
-#include "parse.h"
 #include <cstring>
-#include "lex.h"
+#include <iostream>
+#include "parse.h"
+#include "Grammar.h"
+#include "error_diagnostics.h"
 
+using namespace std;
+
+void binaryDisplay(Nodebase *root, int depth, const char *type) {
+    auto i = dynamic_cast<Expression_Statement_node *>(root);
+    displayAST(i->lhs, depth + 1);
+    int t1 = depth;
+    while (t1-- + 2) {
+        cout << " ";
+    }
+    cout << "/\n";
+    t1 = depth;
+    while (--t1) {
+        cout << " ";
+    }
+    cout << type << endl;
+    t1 = depth;
+    while (t1-- + 2) {
+        cout << " ";
+    }
+    cout << "\\\n";
+    displayAST(i->rhs, depth + 1);
+}
+
+void displayAST(Nodebase *root, int depth) {
+    switch (root->nodetype) {
+        //trinary
+        case ND_QUESTIONMARK:
+            //binary operator
+        case ND_SEMICOLON:
+            binaryDisplay(root, depth + 1, "SEMICOLON");
+
+            break;
+        case ND_LEFTPAR:
+            binaryDisplay(root, depth + 1, "LEFTPAR");
+
+            break;
+        case ND_RIGHTPAR:
+            binaryDisplay(root, depth + 1, "RIGHTPAR");
+
+            break;
+        case ND_COMMA:
+            binaryDisplay(root, depth + 1, "COMMA");
+
+            break;
+        case ND_SHARP:
+            binaryDisplay(root, depth + 1, "SHARP");
+
+            break;
+        case ND_TLIDE:
+            binaryDisplay(root, depth + 1, "TLIDE");
+
+            break;
+        case ND_LEFTBRKT:
+            binaryDisplay(root, depth + 1, "LEFTBRKT");
+
+            break;
+        case ND_RIGHTBRKT:
+            binaryDisplay(root, depth + 1, "RIGHTBRKT");
+
+            break;
+        case ND_LEFTBRACE:
+            binaryDisplay(root, depth + 1, "LEFTBRACE");
+
+            break;
+        case ND_RIGHTBRACE:
+            binaryDisplay(root, depth + 1, "RIGHTBRACE");
+
+            break;
+        case ND_DOT:
+            cout << "DOT"
+                 << "  "
+                 << "  "
+                 << dynamic_cast<Expression_Statement_node *>(root)->field;
+            break;
+        case ND_COLON:
+            binaryDisplay(root, depth + 1, "COLON");
+
+            break;
+        case ND_LT:
+            binaryDisplay(root, depth + 1, "LT");
+
+            break;
+        case ND_GT:
+            binaryDisplay(root, depth + 1, "GT");
+
+            break;
+        case ND_ASSIGN:
+            binaryDisplay(root, depth + 1, "ASSIGN");
+
+            break;
+        case ND_AND:
+            binaryDisplay(root, depth + 1, "AND");
+
+            break;
+        case ND_OR:
+            binaryDisplay(root, depth + 1, "OR");
+
+            break;
+        case ND_ADD:
+            binaryDisplay(root, depth + 1, "ADD");
+
+            break;
+        case ND_SUB:
+            binaryDisplay(root, depth + 1, "SUB");
+
+            break;
+        case ND_MUL:
+            binaryDisplay(root, depth + 1, "MUL");
+
+            break;
+        case ND_DIV:
+            binaryDisplay(root, depth + 1, "DIV");
+
+            break;
+        case ND_MOD:
+            binaryDisplay(root, depth + 1, "MOD");
+
+            break;
+        case ND_XOR :
+            binaryDisplay(root, depth + 1, "XOR ");
+
+            break;
+        case ND_EQ:
+            binaryDisplay(root, depth + 1, "EQ");
+
+            break;
+        case ND_NE:
+            binaryDisplay(root, depth + 1, "NE");
+
+            break;
+        case ND_LE:
+            binaryDisplay(root, depth + 1, "LE");
+
+            break;
+        case ND_GE:
+            binaryDisplay(root, depth + 1, "GE");
+
+            break;
+        case ND_LOGOR:
+            binaryDisplay(root, depth + 1, "LOGOR");
+
+            break;
+        case ND_LOGAND:
+            binaryDisplay(root, depth + 1, "LOGAND");
+
+            break;
+        case ND_SHL:
+            binaryDisplay(root, depth + 1, "SHL");
+
+            break;
+        case ND_SHR:
+            binaryDisplay(root, depth + 1, "SHR");
+
+            break;
+        case ND_MUL_EQ:
+            binaryDisplay(root, depth + 1, "MUL_EQ");
+
+            break;
+        case ND_DIV_EQ:
+            binaryDisplay(root, depth + 1, "DIV_EQ");
+
+            break;
+        case ND_MOD_EQ:
+            binaryDisplay(root, depth + 1, "MOD_EQ");
+
+            break;
+        case ND_ADD_EQ:
+            binaryDisplay(root, depth + 1, "ADD_EQ");
+
+            break;
+        case ND_SUB_EQ:
+            binaryDisplay(root, depth + 1, "SUB_EQ");
+
+            break;
+        case ND_SHL_EQ:
+            binaryDisplay(root, depth + 1, "SHL_EQ");
+
+            break;
+        case ND_SHR_EQ:
+            binaryDisplay(root, depth + 1, "SHR_EQ");
+
+            break;
+        case ND_AND_EQ:
+            binaryDisplay(root, depth + 1, "AND_EQ");
+
+            break;
+        case ND_XOR_EQ:
+            binaryDisplay(root, depth + 1, "XOR_EQ");
+
+            break;
+        case ND_OR_EQ:
+            binaryDisplay(root, depth + 1, "OR_EQ");
+
+            break;
+
+            //unary
+        case ND_EX:;
+        case ND_INC:;
+        case ND_DEC:;
+        case ND_ADDR:
+        case ND_DEREF:
+            break;
+
+            //direct_to_stmts
+        case ND_FUNC:
+        case ND_COMP_STMT:
+        case ND_PROG:
+            for (auto x:root->stmts) {
+                displayAST(x);
+            }
+            break;
+
+        case ND_NUM:
+        case ND_CHAR:
+        case ND_STR:
+        case ND_STRUCT:
+        case ND_TYPEDECL:
+        case ND_VARDEF:
+        case ND_VARREF: {
+            int t1 = depth;
+            while (t1-- + 2) {
+                cout << " ";
+            }
+            cout << root->getName() << endl;
+        }
+            break;
+        case ND_CAST:
+            break;
+        case ND_IF:
+            break;
+        case ND_FOR:
+            break;
+        case ND_DO_WHILE:
+            break;
+        case ND_SWITCH:
+            break;
+        case ND_CASE:
+            break;
+        case ND_BREAK:
+            break;
+        case ND_CONTINUE:
+            break;
+        case ND_RETURN:
+            break;
+        case ND_CALL:
+            cout << root->getName() << endl;
+            break;
+        default:
+            token_error(root->tok, "Bad node in tree");
+    }
+}
+
+
+/*
 
 Type *type_void = new Type{ VOID, 0};
 Type *type_bool = new Type{ BOOL, 1};

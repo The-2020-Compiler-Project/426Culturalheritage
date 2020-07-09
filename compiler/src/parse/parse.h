@@ -41,9 +41,10 @@ enum NODE_TYPE {
     ND_MOD = '%',
     ND_XOR = '^',
     ND_NUM = 256, // Number literal
+    ND_CHAR,      // char literal
     ND_STR,       // string literal
     ND_STRUCT,    // Struct
-    ND_TYPEDECL,  // declaration //变量声明
+    ND_TYPEDECL,  // declaration //类型声明
     ND_VARDEF,    // Variable definition
     ND_VARREF,    // Variable reference
     ND_CAST,      // Cast
@@ -80,8 +81,8 @@ enum NODE_TYPE {
     ND_CALL,      // FunctionDecl call
     ND_FUNC,      // FunctionDecl definition //函数定义
     ND_COMP_STMT, // Compound statement
-    ND_EXPR_STMT, // Expression statement
-    ND_NULL,      // Null statement
+    //  ND_EXPR_STMT, // Expression statement
+    //  ND_NULL,      // Null statement
     ND_PROG
 };
 
@@ -145,7 +146,6 @@ struct Env{
  */
 
 
-
 //抽象语法树
 //变量类型
 
@@ -185,8 +185,6 @@ public:
 
     virtual ~Nodebase() = default;
 };
-
-class Expression_Statement_Node;
 
 //声明节点
 //NODE_TYPE 为 VAR_DEF,FUNC,STRUCT,TYPEDEF
@@ -250,10 +248,10 @@ public:
             Nodebase *init;
             Nodebase *inc;
         };
-        Nodebase *returnval;//return 语句返回值或者是stmt_expr的值
+        Nodebase *returnval;//return 语句返回值或者是表达式的值
         struct {//struct
-            struct Node *struc;
-            char *field;
+            Nodebase *struc;
+            const char *field;
             Type *fieldtype;
         };
     };
@@ -263,6 +261,6 @@ public:
 };
 
 
-Nodebase *get_AST();
+void displayAST(Nodebase *, int x = 1);
 
 #endif
