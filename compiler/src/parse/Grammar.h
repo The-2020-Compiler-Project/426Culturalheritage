@@ -14,7 +14,8 @@ void Program(Nodebase *);//语法分析
 void VariableSetting();//变量声明
 int ExceptStructOrArray();//判断是否为除struct以外的类型
 int VariableName();//变量名
-void StructNaming();//struct声明
+//void StructNaming()
+void StructNaming(Token *tok, Nodebase *env);//struct声明
 void NumberSetting();
 
 void StringSetting();

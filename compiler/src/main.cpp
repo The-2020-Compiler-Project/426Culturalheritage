@@ -9,5 +9,7 @@ int main() {
 
     auto AST = syntax();
 
+    displayAST(AST);
+
     return 0;
 }

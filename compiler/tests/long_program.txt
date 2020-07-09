@@ -1,6 +1,13 @@
 /*number a = 0 + (2 * c) , b;
 */
+
+struct bbb{
+    number next;
+};
+
+char dsafjlksad = 'c';
 number c(number a,number b){
+    bbb.next = 1;
     number aa=(3*5)%2;
     return aa;
 }
@@ -23,11 +30,6 @@ char *f = &d;
 struct s{
  array[10] of number a;
 };
-
-struct aa{
-    struct aa *next;
-};
-
 
 
 number main(){

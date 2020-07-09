@@ -20,7 +20,7 @@ static std::unordered_map<string, Type *> types{
         {{"string"}, new Type{STRING, 8}},
 };
 static Token currentToken;
-#define currentTokenAddr &Token_list.back()
+#define currentTokenAddr (&Token_list.back())
 static Token tempToken;
 
 Expression_Statement_node *
@@ -107,6 +107,10 @@ Expression_Statement_node *primary() {
     if (t->token_type == TK_NUM)
         return new Expression_Statement_node(ND_NUM, t, getType("number"));//new_int_node(t->val, t);
 
+    if (t->token_type == TK_CHAR) {
+        return new Expression_Statement_node(ND_CHAR, t, getType("char"));//new_int_node(t->val, t);
+    }
+
     if (t->token_type == TK_STR)
         return new Expression_Statement_node(ND_STR, t, getType("string"));//string_literal(t);
 
@@ -128,7 +132,7 @@ Expression_Statement_node *postfix() {//后缀目前只支持点，箭头，下�
     for (;;) {
         Token *t = currentTokenAddr;
 
-        /* TODO 补充回来
+        /* TODO 后缀补充回来
             if (consume(TK_INC)) {
                 lhs = new_post_inc(t, lhs, 1);
                 continue;
@@ -141,12 +145,23 @@ Expression_Statement_node *postfix() {//后缀目前只支持点，箭头，下�
             */
 
         if (consume(TK_DOT)) {
-            lhs = new_expr(ND_DOT, currentTokenAddr, lhs);
+            auto tmp = new Expression_Statement_node(ND_DOT, currentTokenAddr);
+            tmp->struc = lhs;
+            tmp->field = currentTokenAddr->Name;
+            lhs = tmp;
+            updateCurrentToken();
             continue;
         }
 
         if (consume(TK_ARROW)) {
-            lhs = new_expr(ND_DOT, currentTokenAddr, new_expr(ND_DEREF, t, lhs));
+            auto tmp = new Expression_Statement_node(ND_DOT, currentTokenAddr);
+            Token *deref = new Token;
+            deref->Name = "Arrow deref";
+            auto struc = new Expression_Statement_node(ND_DEREF, deref, lhs->type->ptr_to);
+            tmp->struc = struc;
+            tmp->field = currentToken.Name;
+            lhs = tmp;
+            updateCurrentToken();
             continue;
         }
 
@@ -417,7 +432,7 @@ void Program(Nodebase *program) {
     if (a == 2) { //数组类型
         ArraySetting();
     } else if (a == 1) {//基本类型
-        ty = getType(tempToken);//TODO 函数时候的类型
+        ty = getType(tempToken);
         //指针判断应当放在这
         while (consume(TK_MUL)) {
             ty = ptr_to(ty);
@@ -437,52 +452,31 @@ void Program(Nodebase *program) {
             }
             expect(TK_SEMICOLON);
         }
-        /*} else if (currentToken.token_type == TK_MUL) {
-            while ((updateCurrentToken()).token_type == TK_MUL) {
-                continue;
-            }
-            if (currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type == TK_LEFTPAR) {
-                    FunctionDecl();
-                } else {
-                    PointSetting();
-                }
-            } else {
-                token_error(currentTokenAddr,"Wrong type!");
-                //终止
-            }
-        }
-        else {
-            token_error(currentTokenAddr,"Wrong type!1");
-            //终止
-        }
-         */
-
-    } else if (a == 0) {//struct开头//TODO
-        ty = getType(currentToken);
-        ty = ty ? ty : new Type(STRUCT, -1);
+    } else if (a == 0) {//struct开头
         //指针判断应当放在这
+        ty = getType(currentToken);
+        ty = ty ? ty : new Type(STRUCT, 0);
+        auto tmp = currentTokenAddr;
         expect(TK_IDENT);
         while (consume(TK_MUL)) {
             ty = ptr_to(ty);
         }
-        auto tmp = currentTokenAddr;
-        //if (consume(TK_IDENT)) {
-        expect(TK_IDENT);
         if (consume(TK_LEFTPAR)) {
             FunctionDecl(ty, tmp, program);
+        } else if (consume(TK_LEFTBRACE)) {
+            //为{，开始struct声明
+            StructNaming(tmp, program);
+            expect(TK_SEMICOLON);
         } else {
-            StructSetting();
+            StructSetting();//TODO struct类型赋值
+            expect(TK_SEMICOLON);
         }
-        expect(TK_SEMICOLON);
 
         /*
 
             if (consume(TK_IDENT)) {
                 updateCurrentToken();
                 if (currentToken.token_type == TK_LEFTBRACE) {
-                    //为{，开始struct声明
-                    StructNaming();
                 } else if (currentToken.token_type == TK_IDENT) {
                     updateCurrentToken();
                     if (currentToken.token_type == TK_LEFTPAR) {
@@ -545,80 +539,101 @@ int VariableName() {
 
     }
 }
+ */
 
-void StructNaming() {
-    while ((updateCurrentToken()).token_type != TK_RIGHTBRACE) {
-        int a = ExceptStructOrArray();
-        tempToken = currentToken;
-        if (a == 2) {//数组定义
-            ArraySetting();
-        } else if (a == 1) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type == TK_LEFTPAR) {
-                    IfParameter();
-                } else {
-                    VariableSetting();
-                }
-            } else if (currentToken.token_type == TK_MUL) {
-                while ((updateCurrentToken()).token_type == TK_MUL) {
-                    continue;
-                }
-                if (currentToken.token_type == TK_IDENT) {
-                    if ((updateCurrentToken()).token_type == TK_LEFTPAR) {
-                        IfParameter();
-                    } else {
-                        PointSetting();
-                    }
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong type!7");
-                //终止
-            }
-        } else if (a == 0) {//struct开头
-            updateCurrentToken();
-            if (currentToken.token_type == TK_IDENT) {//类名
-                updateCurrentToken();
-                if (currentToken.token_type == TK_IDENT) {//变量名
-                    updateCurrentToken();
-                    if (currentToken.token_type == TK_LEFTPAR) {
-                        IfParameter();
-                    } else {
-                        StructSetting();
-                    }
-                } else if (currentToken.token_type == TK_MUL) {
-                    while ((updateCurrentToken()).token_type == TK_MUL) {
-                        continue;
-                    }
-                    if (currentToken.token_type == TK_IDENT) {
-                        if ((updateCurrentToken()).token_type == TK_LEFTPAR) {
-                            IfParameter();
-                        } else {
-                            PointSetting();
-                        }
-                    } else {
-                        token_error(currentTokenAddr, "Wrong StructNaming!8");
-                        //终止
-                    }
-                } else {
-                    token_error(currentTokenAddr, "Wrong StructNaming!9");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong StructNaming!10");
-                //终止
-            }
-        }
+void StructNaming(Token *tok, Nodebase *env) {
+    //查重
+    Type *StructType = new Type(STRUCT, 0);
+    auto structnode = new Declaration_node(ND_STRUCT, tok, StructType);
+    auto pos = types.find(tok->Name);
+    if (pos != types.end()) {
+        // 防止重复声明
+        token_error(tok, "This struct has been defined.");
     }
-    if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-        token_error(currentTokenAddr, "Wrong StructNaming!11");
+    types[tok->Name] = StructType;//放入类型表
+    while (!consume(TK_RIGHTBRACE)) {
+        consume(TK_STRUCT);
+        auto tmpc = getType(currentToken);
+        while (consume(TK_MUL)) {
+            tmpc = ptr_to(tmpc);
+        }
+        if (!tmpc) {
+            token_error(&currentToken, "");
+        };
+        updateCurrentToken();//吃掉目前的类型名
+        expect(TK_IDENT);
+        auto pos = StructType->members.find(currentToken.Name);
+        if (pos != StructType->members.end()) {
+            // 防止重复声明
+            token_error(tok, "This identifier has been defined.");
+        }
+        tmpc->offset = StructType->size;
+        StructType->size += tmpc->size;
+
+        StructType->members[currentToken.Name] = tmpc;
+        while (consume(TK_COMMA)) {
+            tempToken = currentToken;
+            expect(TK_IDENT, "Expecting identifier!");
+            auto pos = types.find(tempToken.Name);
+            if (pos != types.end()) {
+                // 防止重复声明
+                token_error(tok, "This ident has been defined.");
+            }
+            tmpc->offset = StructType->size;
+            StructType->size += tmpc->size;
+        }
+        expect(TK_SEMICOLON, "Expect semicolon!");
+    }
+    env->stmts.push_back(structnode);
+}
+
+/*
+
+void NumberSetting() {//赋值
+if (currentToken.token_type == TK_ADD_EQ || currentToken.token_type == TK_SUB_EQ) {
+    updateCurrentToken();
+    if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
+        if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+            token_error(currentTokenAddr, "Wrong number setting111!");
+            //终止
+        }
+    } else {
+        token_error(currentTokenAddr, "Wrong number setting112!");
         //终止
     }
-}
-void NumberSetting() {//赋值
-    if (currentToken.token_type == TK_ADD_EQ || currentToken.token_type == TK_SUB_EQ) {
+} else if (currentToken.token_type == TK_ASSIGN) {
+    updateCurrentToken();
+    if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
+        if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+            token_error(currentTokenAddr, "Wrong number setting101!");
+            //终止
+        }
+    } else {
+        token_error(currentTokenAddr, "Wrong number setting121!");
+        //终止
+    }
+} else if (currentToken.token_type == TK_COMMA) {
+    while (currentToken.token_type == TK_COMMA) {
         updateCurrentToken();
-        //TODO:贾浩楠,怎么用表达式赋值
+        if ((VariableOutcome = VariableName()) != 1) {
+            token_error(currentTokenAddr, "Wrong number setting!12");
+            //终止
+        }
+        updateCurrentToken();
+    }
+    if (currentToken.token_type == TK_ASSIGN) {
+        updateCurrentToken();
+        if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
+            if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+                token_error(currentTokenAddr, "Wrong number setting!13");
+                //终止
+            }
+        } else {
+            token_error(currentTokenAddr, "Wrong number setting!14");
+            //终止
+        }
+    } else if (currentToken.token_type == TK_SUB_EQ || currentToken.token_type == TK_ADD_EQ) {
+        updateCurrentToken();
         if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
                 token_error(currentTokenAddr, "Wrong number setting111!");
@@ -628,184 +643,142 @@ void NumberSetting() {//赋值
             token_error(currentTokenAddr, "Wrong number setting112!");
             //终止
         }
-    } else if (currentToken.token_type == TK_ASSIGN) {
-        updateCurrentToken();
-        if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
-            if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                token_error(currentTokenAddr, "Wrong number setting101!");
-                //终止
-            }
-        } else {
-            token_error(currentTokenAddr, "Wrong number setting121!");
-            //终止
-        }
-    } else if (currentToken.token_type == TK_COMMA) {
-        while (currentToken.token_type == TK_COMMA) {
-            updateCurrentToken();
-            if ((VariableOutcome = VariableName()) != 1) {
-                token_error(currentTokenAddr, "Wrong number setting!12");
-                //终止
-            }
-            updateCurrentToken();
-        }
-        if (currentToken.token_type == TK_ASSIGN) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                    token_error(currentTokenAddr, "Wrong number setting!13");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong number setting!14");
-                //终止
-            }
-        } else if (currentToken.token_type == TK_SUB_EQ || currentToken.token_type == TK_ADD_EQ) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_NUM || currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                    token_error(currentTokenAddr, "Wrong number setting111!");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong number setting112!");
-                //终止
-            }
-        } else if (currentToken.token_type != TK_SEMICOLON) {
-            token_error(currentTokenAddr, "Wrong number setting!15");
-            //终止
-        }
     } else if (currentToken.token_type != TK_SEMICOLON) {
-        token_error(currentTokenAddr, "Wrong number setting!103");
+        token_error(currentTokenAddr, "Wrong number setting!15");
         //终止
     }
+} else if (currentToken.token_type != TK_SEMICOLON) {
+    token_error(currentTokenAddr, "Wrong number setting!103");
+    //终止
+}
 }
 
 void StringSetting() {
+if (currentToken.token_type == TK_ASSIGN) {
+    updateCurrentToken();
+    if (currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT) {
+        if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+            token_error(currentTokenAddr, "Wrong String setting101!");
+            //终止
+        }
+    } else {
+        token_error(currentTokenAddr, "Wrong String setting101!");
+        //终止
+    }
+} else if (currentToken.token_type == TK_COMMA) {
+    while (currentToken.token_type == TK_COMMA) {
+        updateCurrentToken();
+        if ((VariableOutcome = VariableName()) != 1) {
+            token_error(currentTokenAddr, "Wrong string setting!16");
+            //终止
+        }
+        updateCurrentToken();
+    }
     if (currentToken.token_type == TK_ASSIGN) {
         updateCurrentToken();
         if (currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                token_error(currentTokenAddr, "Wrong String setting101!");
+                token_error(currentTokenAddr, "Wrong string setting!17");
                 //终止
             }
         } else {
-            token_error(currentTokenAddr, "Wrong String setting101!");
-            //终止
-        }
-    } else if (currentToken.token_type == TK_COMMA) {
-        while (currentToken.token_type == TK_COMMA) {
-            updateCurrentToken();
-            if ((VariableOutcome = VariableName()) != 1) {
-                token_error(currentTokenAddr, "Wrong string setting!16");
-                //终止
-            }
-            updateCurrentToken();
-        }
-        if (currentToken.token_type == TK_ASSIGN) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_STR || currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                    token_error(currentTokenAddr, "Wrong string setting!17");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong string setting!18");
-                //终止
-            }
-        } else if (currentToken.token_type != TK_SEMICOLON) {
-            token_error(currentTokenAddr, "Wrong string setting!113");
+            token_error(currentTokenAddr, "Wrong string setting!18");
             //终止
         }
     } else if (currentToken.token_type != TK_SEMICOLON) {
-        token_error(currentTokenAddr, "Wrong string setting!19");
+        token_error(currentTokenAddr, "Wrong string setting!113");
         //终止
     }
+} else if (currentToken.token_type != TK_SEMICOLON) {
+    token_error(currentTokenAddr, "Wrong string setting!19");
+    //终止
+}
 }
 
 void CharSetting() {
+if (currentToken.token_type == TK_ASSIGN) {
+    updateCurrentToken();
+    if (currentToken.token_type == TK_CHAR || currentToken.token_type == TK_IDENT) {
+        if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+            token_error(currentTokenAddr, "Wrong char setting102!");
+            //终止
+        }
+    } else {
+        token_error(currentTokenAddr, "Wrong char setting103!");
+        //终止
+    }
+} else if (currentToken.token_type == TK_COMMA) {
+    while (currentToken.token_type == TK_COMMA) {
+        updateCurrentToken();
+        if ((VariableOutcome = VariableName()) != 1) {
+            token_error(currentTokenAddr, "Wrong char setting!20");
+            //终止
+        }
+        updateCurrentToken();
+    }
     if (currentToken.token_type == TK_ASSIGN) {
         updateCurrentToken();
         if (currentToken.token_type == TK_CHAR || currentToken.token_type == TK_IDENT) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                token_error(currentTokenAddr, "Wrong char setting102!");
+                token_error(currentTokenAddr, "Wrong char setting!21");
                 //终止
             }
         } else {
-            token_error(currentTokenAddr, "Wrong char setting103!");
-            //终止
-        }
-    } else if (currentToken.token_type == TK_COMMA) {
-        while (currentToken.token_type == TK_COMMA) {
-            updateCurrentToken();
-            if ((VariableOutcome = VariableName()) != 1) {
-                token_error(currentTokenAddr, "Wrong char setting!20");
-                //终止
-            }
-            updateCurrentToken();
-        }
-        if (currentToken.token_type == TK_ASSIGN) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_CHAR || currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                    token_error(currentTokenAddr, "Wrong char setting!21");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong char setting!22");
-                //终止
-            }
-        } else if (currentToken.token_type != TK_SEMICOLON) {
-            token_error(currentTokenAddr, "Wrong char setting!112");
+            token_error(currentTokenAddr, "Wrong char setting!22");
             //终止
         }
     } else if (currentToken.token_type != TK_SEMICOLON) {
-        token_error(currentTokenAddr, "Wrong char setting!23");
+        token_error(currentTokenAddr, "Wrong char setting!112");
         //终止
     }
+} else if (currentToken.token_type != TK_SEMICOLON) {
+    token_error(currentTokenAddr, "Wrong char setting!23");
+    //终止
+}
 }
 
 void BoolSetting() {
+if (currentToken.token_type == TK_ASSIGN) {
+    updateCurrentToken();
+    if (currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE ||
+        currentToken.token_type == TK_IDENT) {
+        if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
+            token_error(currentTokenAddr, "Wrong bool setting101!");
+            //终止
+        }
+    } else {
+        token_error(currentTokenAddr, "Wrong bool setting101!");
+        //终止
+    }
+} else if (currentToken.token_type == TK_COMMA) {
+    while (currentToken.token_type == TK_COMMA) {
+        updateCurrentToken();
+        if ((VariableOutcome = VariableName()) != 1) {
+            token_error(currentTokenAddr, "Wrong bool setting!24");
+            //终止
+        }
+        updateCurrentToken();
+    }
     if (currentToken.token_type == TK_ASSIGN) {
         updateCurrentToken();
         if (currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE ||
             currentToken.token_type == TK_IDENT) {
             if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                token_error(currentTokenAddr, "Wrong bool setting101!");
+                token_error(currentTokenAddr, "Wrong bool setting!25");
                 //终止
             }
         } else {
-            token_error(currentTokenAddr, "Wrong bool setting101!");
-            //终止
-        }
-    } else if (currentToken.token_type == TK_COMMA) {
-        while (currentToken.token_type == TK_COMMA) {
-            updateCurrentToken();
-            if ((VariableOutcome = VariableName()) != 1) {
-                token_error(currentTokenAddr, "Wrong bool setting!24");
-                //终止
-            }
-            updateCurrentToken();
-        }
-        if (currentToken.token_type == TK_ASSIGN) {
-            updateCurrentToken();
-            if (currentToken.token_type == TK_TRUE || currentToken.token_type == TK_FALSE ||
-                currentToken.token_type == TK_IDENT) {
-                if ((updateCurrentToken()).token_type != TK_SEMICOLON) {
-                    token_error(currentTokenAddr, "Wrong bool setting!25");
-                    //终止
-                }
-            } else {
-                token_error(currentTokenAddr, "Wrong bool setting!26");
-                //终止
-            }
-        } else if (currentToken.token_type != TK_SEMICOLON) {
-            token_error(currentTokenAddr, "Wrong bool setting!111");
+            token_error(currentTokenAddr, "Wrong bool setting!26");
             //终止
         }
     } else if (currentToken.token_type != TK_SEMICOLON) {
-        token_error(currentTokenAddr, "Wrong bool setting!27");
+        token_error(currentTokenAddr, "Wrong bool setting!111");
         //终止
     }
+} else if (currentToken.token_type != TK_SEMICOLON) {
+    token_error(currentTokenAddr, "Wrong bool setting!27");
+    //终止
+}
 }
 
 */
