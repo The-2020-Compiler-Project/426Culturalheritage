@@ -1,10 +1,19 @@
-number a = 0 + (2 * c) , b;
+/*number a = 0 + (2 * c) , b;
+*/
 number c(number a,number b){
     number aa=(3*5)%2;
     return aa;
 }
-
 number main(){
+    number a = 0 + (2 * 3) ;
+    if(a+3<5){
+        while(a<4){
+            ++a;
+        }
+    }else if(a>6){
+        return 3;
+    }else
+        return 5;
     return c();
 }
 /*
