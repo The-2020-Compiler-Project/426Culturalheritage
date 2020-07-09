@@ -16,7 +16,7 @@ void all_error(const std::string &msg) {
 
 void token_error(Token *token, const char *msg) {
     std::cerr << "Failed Token: " << token->Name << " Line num: " << token->line_num << " colomn_num: "
-              << token->colomn_num << "Error: " << msg << '\n';
+              << token->colomn_num << " Error: " << msg << '\n';
     std::exit(1);
 }
 

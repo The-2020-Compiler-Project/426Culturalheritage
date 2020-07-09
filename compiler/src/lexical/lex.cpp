@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <unordered_map>
 #include "lex.h"
 
@@ -42,7 +41,7 @@ static std::unordered_map<string, Token_type> reserveWord{
         {{"continue"}, TK_CONTINUE},
         {{"new"},      TK_NEW},
         {{"delete"},   TK_DELETE},
-        {{"main"},     TK_MAIN},
+//TODO        {{"main"},     TK_MAIN},
         {{"return"},   TK_RETURN},
         {{"sizeof"},   TK_SIZEOF},
         {{"true"},     TK_TRUE},

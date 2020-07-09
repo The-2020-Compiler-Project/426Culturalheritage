@@ -1,5 +1,12 @@
-number a = 0 , b;
-number c(){}
+number a = 0 + (2 * c) , b;
+number c(number a,number b){
+    number aa=(3*5)%2;
+    return aa;
+}
+
+number main(){
+    return c();
+}
 /*
 string c = "abcd";
 char d = 'e';
