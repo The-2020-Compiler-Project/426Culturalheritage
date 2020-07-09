@@ -41,8 +41,9 @@ enum NODE_TYPE {
     ND_MOD = '%',
     ND_XOR = '^',
     ND_NUM = 256, // Number literal
+    ND_STR,       // string literal
     ND_STRUCT,    // Struct
-    ND_TYPEDECL,      // declaration //变量声明
+    ND_TYPEDECL,  // declaration //变量声明
     ND_VARDEF,    // Variable definition
     ND_VARREF,    // Variable reference
     ND_CAST,      // Cast
@@ -122,8 +123,8 @@ struct Type {
 };
 
 
-class Var{
-    char * name;
+class Var {
+    char *name;
     Data_type *type;
     char *data;
 };
@@ -200,7 +201,6 @@ public:
     //函数类型 type
     //返回值类型 type->returning
     std::vector<Declaration_node *> parms;//形参
-    std::vector<Nodebase *> args;//实参
     Nodebase *fptr;//函数指针
     std::vector<char *> localvars;
     //函数体是Nodebase的stmts
@@ -222,7 +222,7 @@ public:
     Expression_Statement_node(NODE_TYPE tp, Token *tk, Type *dt = nullptr, const char *tn = "") :
             Nodebase(tp, tk, dt, tn) {}
 
-    Data_type type;
+    //Data_type type;
 
     union {
         long double val;//number, char, bool的值
@@ -234,7 +234,7 @@ public:
             Expression_Statement_node *rhs;//right-hand
         };
         struct {//一元
-            Expression_Statement_node *operand;
+            Expression_Statement_node *operand;//TODO 弃用?
         };
         //if (cond) body else else_body
         //for (init; cond;inc)
@@ -249,7 +249,8 @@ public:
             Nodebase *init;
             Nodebase *inc;
         };
-        Nodebase *returnval;//返回值
+        std::vector<Nodebase *> args;//实参
+        Nodebase *returnval;//return 语句返回值或者是stmt_expr的值
         struct {//struct
             struct Node *struc;
             char *field;

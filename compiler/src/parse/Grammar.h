@@ -10,7 +10,7 @@
 
 Nodebase *syntax();
 
-void Program();//语法分析
+void Program(Nodebase *);//语法分析
 void VariableSetting();//变量声明
 int ExceptStructOrArray();//判断是否为除struct以外的类型
 int VariableName();//变量名
@@ -29,11 +29,11 @@ void ArraySetting();
 
 void PointSetting();
 
-void FunctionDecl(Type *returning, Token *tok);
+void FunctionDecl(Type *returning, Token *tok, Nodebase *env);
 
 int IfType();
 
-void ControlStream();
+Nodebase *ControlStream(Nodebase *);
 
 void Expression();
 
@@ -46,5 +46,13 @@ void IfParameter();
 void addParameter(Declaration_node *func);
 
 void variableDef(Type *t, Token *var, Nodebase *);
+
+
+Expression_Statement_node *expr();
+
+Expression_Statement_node *
+new_assign_eq(NODE_TYPE op, Token *top, Expression_Statement_node *lhs, Expression_Statement_node *rhs);
+
+Expression_Statement_node *assign();
 
 #endif //COMPILER_GRAMMAR_H
