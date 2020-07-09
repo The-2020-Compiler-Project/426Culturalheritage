@@ -1,7 +1,7 @@
 /**
  * AlbertTan
  * grammar Tree To Quadruple
- * 当前进度：程序入口四元式生成、number、char全局变量的声明与定义的四元式生成
+ * 当前进度：
  * 当前问题：
  */
 
@@ -9,9 +9,9 @@
 #define COMPILER_SEMANTIC_H
 
 #include <iostream>
-#include "../parse/parse.h"
-#include "../lexical/lex.h"
-#include "../quadruple/quadruple.h"
+#include "parse.h"
+#include "lex.h"
+#include "quadruple.h"
 #include "../tables/tables.h"
 
 // 返回变量
