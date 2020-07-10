@@ -1,14 +1,14 @@
 /*number a = 0 + (2 * c) , b;
 
-struct bbb{
-    number next;
-};
 
 char dsafjlksad = 'b';
 */
+struct bbb{
+    number next;
+};
 char dsafjlksad = 'c';
 number c(number a,number b){
-    number bbb = 1;
+    number bb = 1;
     number aa=(3*5)%2;
     return aa;
 }
