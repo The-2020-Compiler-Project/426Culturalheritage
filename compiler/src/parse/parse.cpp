@@ -234,7 +234,6 @@ void displayAST(Nodebase *root, int depth) {
         case ND_CAST:
             break;
         case ND_IF:
-            break;
         case ND_FOR:
             break;
         case ND_DO_WHILE:
@@ -248,6 +247,7 @@ void displayAST(Nodebase *root, int depth) {
         case ND_CONTINUE:
             break;
         case ND_RETURN:
+            cout << root->getName() << endl;
             break;
         case ND_CALL:
             cout << root->getName() << endl;

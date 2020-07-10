@@ -8,6 +8,7 @@ static auto CT = new constTable();
 static auto IT = new idenTable();
 static int temp_count = 0;
 
+/*
 // double转char*
 string doubleToStr(double n) {
     return to_string(n);
@@ -17,7 +18,6 @@ string doubleToStr(double n) {
 double strToDouble(const char *s) {
     double ret = stod(string(s));
     return ret;
-/*
     double afterDot = 0.1;
     for(int i=0; i<strlen(s) ; i++){
         if( s[i] != '.' ){
@@ -32,8 +32,8 @@ double strToDouble(const char *s) {
             break;
         }
     }
-*/
 }
+*/
 // 遍历树 获取一个结点的数值同时更新四元式
 // 未创建临时变量
 /*
@@ -85,7 +85,7 @@ void Assignment(Quadruple *quadruple, Expression_Statement_node *p) {
 
 // 递归 函数定义
 void FuncDeclare(Quadruple *quadruple, Declaration_node *p) {
-    quadruple->addQuadruple("function", "", "", p->getName());
+    quadruple->addQuadruple("func_de", "", "", p->getName());
     traverse(quadruple, p);
 }
 
@@ -240,6 +240,7 @@ void traverse(Quadruple *quadruple, Nodebase *p) {
             // 函数定义
             Declaration_node *declarationNode = dynamic_cast<Declaration_node *>(cur);
             FuncDeclare(quadruple, declarationNode);
+            quadruple->addQuadruple("func_end", "", "", cur->getName());
         } else if (cur->nodetype == ND_RETURN) {
             // 函数return
             Expression_Statement_node *statementNode = dynamic_cast<Expression_Statement_node *>(cur);
