@@ -9,9 +9,14 @@
 ```
 |─reports  报告
 └─compiler 源码
-  ├─src    实现的源码
-  └─tests  测试
-      └─gtest 测试框架
+  ├─tests   测试
+  |  └─gtest 测试框架
+  └─src     实现的源码
+     ├─gen      目标代码生成
+     ├─lexical  词法分析
+     ├─parse    语法分析
+     ├─semantic 语义分析
+     └─util     辅助函数
 ```
 
 ## TODO
