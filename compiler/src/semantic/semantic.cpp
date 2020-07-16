@@ -66,6 +66,61 @@ double getNumber( Expression_Statement_node *p ){
 }
  */
 
+bool hasSon(Nodebase *p) {
+    switch (p->nodetype) {
+        case ND_QUESTIONMARK:
+            return false;
+        case ND_XOR :
+            return false;
+        case ND_NUM :
+            return false; // Number literal
+        case ND_CHAR:
+            return false;      // char literal
+        case ND_STR:
+            return false;       // string literal
+        case ND_STRUCT:
+            return false;    // Struct
+        case ND_TYPEDECL:
+            return false;  // declaration //类型声明
+        case ND_VARDEF:
+            return false;    // Variable definition
+        case ND_VARREF:
+            return false;    // Variable reference
+        case ND_CAST:
+            return false;     // Cast
+        case ND_IF:
+            return false;        // "if"
+        case ND_FOR:
+            return false;       // "for"
+        case ND_DO_WHILE:
+            return false;  // do ... while
+        case ND_SWITCH:
+            return false;    // switch
+        case ND_CASE:
+            return false;      // case
+        case ND_BREAK:
+            return false;     // break
+        case ND_CONTINUE:
+            return false;  // continue
+        case ND_ADDR:
+            return false;      // address-of operator ("&")
+        case ND_DEREF:
+            return false;     // pointer dereference ("*")
+        case ND_RETURN:
+            return false;    // "return"
+        case ND_CALL:
+            return false;      // FunctionDecl call
+        case ND_FUNC:
+            return false;      // FunctionDecl definition //函数定义
+        case ND_COMP_STMT:
+            return false; // Compound statement
+        case ND_PROG :
+            return false;
+        default:
+            return true;
+    }
+}
+
 // 赋值语句 当前p结点为_equ
 void Assignment(Quadruple *quadruple, Expression_Statement_node *p) {
     Expression_Statement_node *lhs = p->lhs;
@@ -80,7 +135,8 @@ void Assignment(Quadruple *quadruple, Expression_Statement_node *p) {
     // 生成四元式
     quadruple->addQuadruple("=", value, "_", lhs->getName());
     // 标识符表赋值
-    IT->idTable[const_cast<char *>(lhs->getName())] = value;
+    IT->append<false>(lhs->getName(), value);
+    //IT->idTable[const_cast<char *>(lhs->getName())] .first= value;
 }
 
 // 递归 函数定义
@@ -91,7 +147,16 @@ void FuncDeclare(Quadruple *quadruple, Declaration_node *p) {
 
 // Return语句
 void RT(Quadruple *quadruple, Expression_Statement_node *p) {
-    auto retValue = calculate(quadruple, dynamic_cast<Expression_Statement_node *>(p->returnval));
+    auto ret = dynamic_cast<Expression_Statement_node *>(p->returnval);
+    if (ret->nodetype == ND_CALL) {
+        string temp = "t";
+        temp += to_string(temp_count++);
+        IT->append<true>(temp, "0");
+        quadruple->addQuadruple("call", p->getName(), "_", temp);
+        quadruple->addQuadruple("return", "_", "_", temp);
+        return;
+    }
+    auto retValue = calculate(quadruple, ret);
     quadruple->addQuadruple("return", "_", "_", retValue);
 }
 
@@ -101,7 +166,8 @@ void IF(Quadruple *quadruple, Expression_Statement_node *p) {
     if (cond->nodetype == ND_EX) {
         string temp = "t";
         temp += to_string(temp_count++);
-        IT->idTable[temp] = string("0");
+        IT->append<true>(temp, "0");
+        //IT->idTable[temp] = string("0");
         auto ex = dynamic_cast<Expression_Statement_node *>(cond->returnval);
         string s = calculate(quadruple, ex);
         quadruple->addQuadruple("!", s, "_", temp);
@@ -119,12 +185,19 @@ void IF(Quadruple *quadruple, Expression_Statement_node *p) {
 //    temp += to_string(temp_count++);
 //    IT->append(temp);
     string leftStr = calculate(quadruple, lhs);
-    IT->idTable[leftStr] = string("0");
+    if (lhs->nodetype != ND_VARREF && lhs->nodetype != ND_NUM) {
+        IT->append<false>(leftStr, "0");
+    }
+    //IT->idTable[leftStr] = string("0");
     string rightStr = calculate(quadruple, rhs);
-    IT->idTable[rightStr] = string("0");
+    if (rhs->nodetype != ND_VARREF && rhs->nodetype != ND_NUM) {
+        IT->append<false>(rightStr, "0");
+    }
+    //IT->idTable[rightStr] = string("0");
     string temp = "t";
     temp += to_string(temp_count++);
-    IT->idTable[temp] = string("0");
+    IT->append<true>(temp, "0");
+    //IT->idTable[temp] = string("0");
     if (cond->nodetype == ND_EQ) {
         // 等于
         quadruple->addQuadruple("==", leftStr, rightStr, temp);
@@ -167,7 +240,8 @@ void FOR(Quadruple *quadruple, Expression_Statement_node *p) {
     if (cond->nodetype == ND_EX) {
         string temp = "t";
         temp += to_string(temp_count++);
-        IT->idTable[temp] = string("0");
+        IT->append<true>(temp, "0");
+        //IT->idTable[temp] = string("0");
         auto ex = dynamic_cast<Expression_Statement_node *>(cond->returnval);
         string s = calculate(quadruple, ex);
         quadruple->addQuadruple("!", s, "_", temp);
@@ -184,12 +258,19 @@ void FOR(Quadruple *quadruple, Expression_Statement_node *p) {
     auto *lhs = dynamic_cast<Expression_Statement_node *>(cond->lhs);
     auto *rhs = dynamic_cast<Expression_Statement_node *>(cond->rhs);
     string leftStr = calculate(quadruple, lhs);
-    IT->idTable[leftStr] = string("0");
+    if (lhs->nodetype != ND_VARREF && lhs->nodetype != ND_NUM) {
+        IT->append<false>(leftStr, "0");
+    }
+    //IT->idTable[leftStr] = string("0");
     string rightStr = calculate(quadruple, rhs);
-    IT->idTable[rightStr] = string("0");
+    if (rhs->nodetype != ND_VARREF && rhs->nodetype != ND_NUM) {
+        IT->append<false>(rightStr, "0");
+    }
+    //IT->idTable[rightStr] = string("0");
     string temp = "t";
     temp += to_string(temp_count++);
-    IT->idTable[temp];
+    IT->append<true>(temp, "0");
+    //IT->idTable[temp];
     if (cond->nodetype == ND_EQ) {
         // 等于
         quadruple->addQuadruple("==", leftStr, rightStr, temp);
@@ -231,7 +312,7 @@ void traverse(Quadruple *quadruple, Nodebase *p) {
             if (IT->exist(cur->getName())) {
                 token_error(cur->tok, "Identifier has been defined.");
             }
-            IT->append(cur->getName());
+            IT->append<false>(cur->getName());
         } else if (cur->nodetype == ND_ASSIGN) {
             // 赋值结点
             Expression_Statement_node *statementNode = dynamic_cast<Expression_Statement_node *>(cur);
@@ -279,7 +360,7 @@ Quadruple *treeToQuad(Nodebase *p) {
 
 void idenTable::print(ostream &out) {
     for (auto[x, y]:idTable) {
-        out << x << ' ' << y << endl;
+        out << x << ' ' << y.first << endl;
     }
 }
 
@@ -289,7 +370,7 @@ idenTable *getIdenTable() {
 
 string calculate(Quadruple *quadruple, Nodebase *p) {
     auto expressionNode = dynamic_cast<Expression_Statement_node *>(p);
-    if (!expressionNode->lhs) {
+    if (!hasSon(expressionNode)) {
         return expressionNode->getName();
     }
     string op;
@@ -316,7 +397,8 @@ string calculate(Quadruple *quadruple, Nodebase *p) {
     auto rhs = dynamic_cast<Expression_Statement_node *>(expressionNode->rhs);
     string temp = "t";
     temp += to_string(temp_count++);
-    IT->idTable[temp] = string();
+    IT->append<true>(temp, "0");
+    //IT->idTable[temp] = string();
     quadruple->addQuadruple(op, calculate(quadruple, lhs), calculate(quadruple, rhs), temp);
     return temp;
 }

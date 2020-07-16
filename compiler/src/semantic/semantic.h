@@ -18,13 +18,14 @@
 
 class idenTable {
 public:
-    std::map<std::string, std::string> idTable;
+    std::map<std::string, std::pair<std::string, bool>> idTable;
 
     bool exist(const char *s);
 
     std::string getValue(const char *s);
 
-    void append(const char *s, const std::string &value = "");
+    template<bool isTemp>
+    void append(const std::string &s, const std::string &value = "");
 
     idenTable() {};
 
@@ -63,7 +64,8 @@ public:
     std::vector<Quad *> quadrupleList;
 
     void
-    addQuadruple(std::string op, std::string src1, std::string src2, std::string dst, int f = 0, int s = 0, int t = 0);
+    addQuadruple(std::string op, std::string src1, std::string src2, std::string dst, int f = -1, int s = -1,
+                 int t = -1);
 
     int length() const;
 
@@ -125,5 +127,7 @@ void RT(Quadruple *quadruple, Expression_Statement_node *p);
 idenTable *getIdenTable();
 
 std::string calculate(Quadruple *quadruple, Nodebase *p);
+
+bool hasSon(Nodebase *p);
 
 #endif //COMPILER_SEMANTIC_H

@@ -2,12 +2,12 @@
 
 
 char dsafjlksad = 'b';
-*/
 struct bbb{
     number next;
 };
 char dsafjlksad = 'c';
-number c(number a,number b){
+*/
+number c(){
     number bb = 1;
     number aa=(3*5)%2;
     return aa;
@@ -16,7 +16,7 @@ number main(){
     number a = 0 + (2 * 3) ;
     if(a+3<5){
         while(a<4){
-            ++a;
+            a=a+1;
         }
     }else if(a>6){
         return 3;

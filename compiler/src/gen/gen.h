@@ -36,7 +36,7 @@ typedef struct {
 
 //vector<STY> siyuanshi(); //返回四元式
 //vector<SymbolNode> backSymbol(); //返回符号表
-void TargetCode();
+void TargetCode(const vector<string> &iden);
 
 
 #endif // HEAD_H_INCLUDED

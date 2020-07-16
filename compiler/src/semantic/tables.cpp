@@ -10,12 +10,18 @@ bool idenTable::exist(const char *s) {
 
 // 返回标识符对应value
 std::string idenTable::getValue(const char *s) {
-    return idTable[s];
+    return idTable[s].first;
 }
 
 // 向map中增加元素
-void idenTable::append(const char *s, const string &value) {
-    idTable[s] = value;
+template<>
+void idenTable::append<true>(const std::string &s, const string &value) {
+    idTable[s] = {value, true};
+}
+
+template<>
+void idenTable::append<false>(const std::string &s, const string &value) {
+    idTable[s] = {value, false};
 }
 
 // 获取对应number下标
