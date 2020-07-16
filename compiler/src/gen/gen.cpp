@@ -1,9 +1,8 @@
-#include"gen.h"
 #include <iostream>
-
-
 #include<vector>
 #include<stack>
+#include "semantic.h"
+#include"gen.h"
 
 using namespace std;
 
@@ -45,6 +44,11 @@ void getFourStyle() {   //获取四元式
     siyuanshi.close();
 }
 
+void getFourStyle(Quadruple *q) {
+
+}
+
+
 void getSymbol() {           //获取建议符号表
     ifstream fuhaobiao;
     fuhaobiao.open("Symbol1.txt");
@@ -77,21 +81,21 @@ void OUTPUTStoreSymbolNode() {
 }
 
 
-void TargetCode() {
+void TargetCode(const vector<string> &iden) {
     unsigned int i;
     unsigned int j;
     unsigned int locate;
     unsigned int locate_1;
     vector<string> OBJ;//存放目标代码
     stack<string> SEM;
-    vector<string> iden; //需要预先进行分配内存的标志符
+    //vector<string> iden; //需要预先进行分配内存的标志符
     string s1; //用来存放当下的目标代码
     string s2; //用来存放当下的目标代码
     string s3;
     string ss;//用来表示+-*/对应的目标代码
     string su;
     RDL R; //模拟单寄存器
-    fstream Targetcode;
+    /*
     ifstream fuhaobiao;
     fuhaobiao.open("Symbol1.txt");
     while (!fuhaobiao.eof() && fuhaobiao.peek() != EOF) {
@@ -100,6 +104,7 @@ void TargetCode() {
         fuhaobiao >> aa >> fhb.data >> bb >> fhb.type >> cc >> fhb.state >> dd;
         Symbol.push_back(fhb);
     }
+     */
     int a = 0;
     //FourStyle = siyuanshi();
     //进行块划分
@@ -109,17 +114,18 @@ void TargetCode() {
     R.data = "_";
     R.state = 0;
 
+
     for (i = 0; i < block.size(); i++) {
         ActiveInfo(i);
         for (j = block[i].begin; j <= block[i].end; j++) {
-
             if (FourStyle[j].third != "_" && FourStyle[j].t == 1) {
                 su = FourStyle[j].third;
-                iden.push_back(su); //得到要进行存储，并需要开辟空间的一系列数据
+                //iden.push_back(su); //得到要进行存储，并需要开辟空间的一系列数据
                 //0-临时变量；1-非临时变量
             }
         }
     }
+
 
     //进行汇编语言的预编写；
     //采取先写到一个vector OBJ中，完成之后再向文件中写
@@ -144,7 +150,7 @@ void TargetCode() {
     //代码段
     s1 = "CSEG   SEGMENT";
     OBJ.push_back(s1);
-    s1 = "      ASSUME   CS:DSEG,DS:DSEG,SS:SSEG";
+    s1 = "      ASSUME   CS:CSEG,DS:DSEG,SS:SSEG";
     OBJ.push_back(s1);
     s1 = "START:   MOV AX,DSEG";
     OBJ.push_back(s1);
@@ -180,28 +186,50 @@ void TargetCode() {
             //加减乘除
             if (FourStyle[j].deli == "+" || FourStyle[j].deli == "-"
                 || FourStyle[j].deli == "*" || FourStyle[j].deli == "/") {
-                if (FourStyle[j].deli == "+") ss = "ADD";
-                if (FourStyle[j].deli == "-") ss = "SUB";
-                if (FourStyle[j].deli == "*") ss = "MUL";
-                if (FourStyle[j].deli == "/") ss = "DIV";
+                if (FourStyle[j].deli == "+") ss = "ADD ";
+                if (FourStyle[j].deli == "-") ss = "SUB ";
+                if (FourStyle[j].deli == "*") ss = "MUL ";
+                if (FourStyle[j].deli == "/") ss = "DIV ";
 
                 if (R.data == "_") {
                     s1 = "MOV AX," + FourStyle[j].first;
-                    s2 = ss + " AX," + FourStyle[j].second;
-                    OBJ.push_back(s1);
-                    OBJ.push_back(s2);
+                    if (FourStyle[j].deli != "*" && FourStyle[j].deli != "/") {
+                        s2 = ss + " AX," + FourStyle[j].second;
+                        OBJ.push_back(s1);
+                        OBJ.push_back(s2);
+                    } else {
+                        s3 = "MOV BX," + FourStyle[j].second;
+                        s2 = ss + "BX";
+                        OBJ.push_back(s1);
+                        OBJ.push_back(s2);
+                        OBJ.push_back(s3);
+                    }
                 } else {
                     if (R.data == FourStyle[j].first) {
                         //活跃
                         if (FourStyle[j].f == 1) {
                             s1 = "MOV " + FourStyle[j].first + ",AX";
-                            s2 = ss + " AX," + FourStyle[j].second;
+                            //s2 = ss + " AX," + FourStyle[j].second;
+                            if (FourStyle[j].deli != "*" && FourStyle[j].deli != "/") {
+                                s2 = ss + " AX," + FourStyle[j].second;
+                            } else {
+                                s3 = "MOV BX," + FourStyle[j].second;
+                                s2 = ss + "BX";
+                            }
                             OBJ.push_back(s1);
+                            OBJ.push_back(s3);
                             OBJ.push_back(s2);
                         } else  //不活跃
                         {
-                            s1 = ss + " AX," + FourStyle[j].second;
-                            OBJ.push_back(s1);
+                            if (FourStyle[j].deli != "*" && FourStyle[j].deli != "/") {
+                                s2 = ss + " AX," + FourStyle[j].second;
+                                OBJ.push_back(s2);
+                            } else {
+                                s3 = "MOV BX," + FourStyle[j].second;
+                                s2 = ss + "BX";
+                                OBJ.push_back(s3);
+                                OBJ.push_back(s2);
+                            }
                         }
                     } else if (R.data == FourStyle[j].second &&
                                (FourStyle[j].deli == "+" || FourStyle[j].deli == "*")) {
@@ -211,17 +239,32 @@ void TargetCode() {
                             OBJ.push_back(s1);
                         }
                         //不管活不活跃
-                        s2 = ss + " AX," + FourStyle[j].first;
-                        OBJ.push_back(s2);
+                        //s2 = ss + " AX," + FourStyle[j].first;
+                        if (FourStyle[j].deli != "*" && FourStyle[j].deli != "/") {
+                            s2 = ss + " AX," + FourStyle[j].second;
+                            OBJ.push_back(s2);
+                        } else {
+                            s3 = "MOV BX," + FourStyle[j].second;
+                            s2 = ss + "BX";
+                            OBJ.push_back(s3);
+                            OBJ.push_back(s2);
+                        }
                     } else {
                         if (R.state == 1) {
                             s1 = "MOV " + R.data + ",AX";
                             OBJ.push_back(s1);
                         }
                         s2 = "MOV AX," + FourStyle[j].first;
-                        s3 = ss + " AX," + FourStyle[j].second;
-                        OBJ.push_back(s2);
-                        OBJ.push_back(s3);
+                        //s3 = ss + " AX," + FourStyle[j].second;
+                        if (FourStyle[j].deli != "*" && FourStyle[j].deli != "/") {
+                            s2 = ss + " AX," + FourStyle[j].second;
+                            OBJ.push_back(s2);
+                        } else {
+                            s3 = "MOV BX," + FourStyle[j].second;
+                            s2 = ss + "BX";
+                            OBJ.push_back(s3);
+                            OBJ.push_back(s2);
+                        }
                     }
                 }
             }
@@ -353,12 +396,14 @@ void TargetCode() {
                     s2 = "MOV AX," + FourStyle[j].first;
                     OBJ.push_back(s2);
                 }
-                s1 = "IF" + to_string(a) + ":";
+                s1 = "IFF" + to_string(a) + ":";
                 OBJ.push_back(s1);
                 s2 = "CMP AL,0000H";
                 OBJ.push_back(s2);
                 s3 = "JE ELSE" + to_string(a);
                 OBJ.push_back(s3);
+                SEM.push("ENDIF" + to_string(a) + ":");
+                SEM.push("ELSE" + to_string(a) + ":");
             }
 
             if (FourStyle[j].deli == "el") {
@@ -366,8 +411,8 @@ void TargetCode() {
                     s1 = "MOV " + R.data + ",AX";
                     OBJ.push_back(s1);
                 }
-                s1 = "ELSE" + to_string(a) + ":";
-                OBJ.push_back(s1);
+                OBJ.push_back(SEM.top());
+                SEM.pop();
             }
 
             if (FourStyle[j].deli == "ie") {
@@ -375,8 +420,8 @@ void TargetCode() {
                     s1 = "MOV " + R.data + ",AX";
                     OBJ.push_back(s1);
                 }
-                s1 = "ENDIF:";
-                OBJ.push_back(s1);
+                OBJ.push_back(SEM.top());
+                SEM.pop();
             }
 
 
@@ -426,6 +471,7 @@ void TargetCode() {
                 s1 = "JMP   " + s3;
                 OBJ.push_back(s1);
                 SEM.pop();
+
                 s3 = SEM.top();
                 s1 = s3 + ":";
                 OBJ.push_back(s1);
@@ -500,7 +546,7 @@ void TargetCode() {
     OBJ.push_back(s1);
     OBJ.push_back(s2);
 
-    Targetcode.open("TargetCode1.ASM", ios::out);
+    fstream Targetcode("TargetCode1.ASM", ios::out);
     //输出信息；
     for (i = 0; i < OBJ.size(); i++) {
         cout << OBJ[i] << endl;
