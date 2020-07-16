@@ -18,6 +18,15 @@ void OUTPUT();
 
 void OUTPUTStoreSymbolNode();
 
+struct block_begin_end {
+    int begin;
+    int end;
+};
+
+struct RDL {
+    string data;  //寄存器中的数据
+    int state;   //该数据的活跃信息；y-1;n-0;
+};
 typedef struct {
     string deli;//算符 t1=a*b
     string first;//a
@@ -36,7 +45,7 @@ typedef struct {
 
 //vector<STY> siyuanshi(); //返回四元式
 //vector<SymbolNode> backSymbol(); //返回符号表
-void TargetCode(const vector<string> &iden);
+void TargetCode(const vector<string> &iden, const string &outputpath);
 
 
 #endif // HEAD_H_INCLUDED

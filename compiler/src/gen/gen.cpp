@@ -6,15 +6,7 @@
 
 using namespace std;
 
-struct block_begin_end {
-    int begin;
-    int end;
-};
 
-struct RDL {
-    string data;  //寄存器中的数据
-    int state;   //该数据的活跃信息；y-1;n-0;
-};
 
 /********************************************/
 //这三个本.cpp应通用
@@ -81,11 +73,11 @@ void OUTPUTStoreSymbolNode() {
 }
 
 
-void TargetCode(const vector<string> &iden) {
-    unsigned int i;
-    unsigned int j;
-    unsigned int locate;
-    unsigned int locate_1;
+void TargetCode(const vector<string> &iden, const string &outputpath) {
+    int i;
+    int j;
+    //unsigned int locate;
+    //unsigned int locate_1;
     vector<string> OBJ;//存放目标代码
     stack<string> SEM;
     //vector<string> iden; //需要预先进行分配内存的标志符
@@ -546,17 +538,20 @@ void TargetCode(const vector<string> &iden) {
     OBJ.push_back(s1);
     OBJ.push_back(s2);
 
-    fstream Targetcode("TargetCode1.ASM", ios::out);
+    fstream Targetcode(outputpath, ios::out);
+    if (!Targetcode) {
+        cerr << "Can't open path: " << outputpath;
+    }
     //输出信息；
     for (i = 0; i < OBJ.size(); i++) {
-        cout << OBJ[i] << endl;
-        Targetcode << OBJ[i] << endl;
+        cout << OBJ[i] << '\n';
+        Targetcode << OBJ[i] << '\n';
     }
 
 }
 
 void getBlock() {
-    unsigned int i;  //因为vector中 .size()的返回值是无符号数
+    int i;  //因为vector中 .size()的返回值是无符号数
     int n;
     block_begin_end a;
     a.begin = 0;
@@ -603,8 +598,7 @@ void getBlock() {
 }
 
 void ActiveInfo(int i) {
-
-    unsigned int m;
+    int m;
     int first;
     int second;
     int third;

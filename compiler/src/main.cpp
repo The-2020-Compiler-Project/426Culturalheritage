@@ -10,17 +10,32 @@
 extern vector<STY> FourStyle;
 extern vector<SymbolNode> Symbol;
 
-int main() {
-    const char *path = R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
-    Init_lexer(path);
+int main(int argc, char **argv) {
+    string inputpath, outputpath;
+    if (argc == 1) {
+        cout << "Path of input file: ";
+        getline(cin, inputpath);
+
+        cout << "Path of output file: ";
+        getline(cin, outputpath);
+    } else if (argc == 3) {
+        inputpath = argv[1];
+        outputpath = argv[2];
+    } else {
+        cerr << "Error: need 2 parameters\n";
+        cout << "Usage: compile [path of input] [path of output]";
+        exit(0);
+    }
+    //const char *path = argv[1];R"(D:\source\426Culturalheritage\compiler\tests\long_program.txt)";
+    Init_lexer(inputpath.c_str());
 
     auto AST = syntax();
     //auto program = get_AST();
 
+    cout << "Output some of the AST:\n";
+    displayAST(AST);
     auto q = treeToQuad(AST);
 
-
-    displayAST(AST);
 
     q->print(std::cout);
     std::cout << "*********" << std::endl;
@@ -45,7 +60,8 @@ int main() {
         iden.push_back(x);
     }
 
-    TargetCode(iden);
+    TargetCode(iden, outputpath);
+    cout << "ASM code output to " << outputpath;
 
     return 0;
 

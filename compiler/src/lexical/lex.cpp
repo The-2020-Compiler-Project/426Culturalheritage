@@ -626,7 +626,7 @@ void Init_lexer(const char *path) {
         resourceProject.close();
     resourceProject = ifstream(path, ios::in);
     if (!resourceProject) { //打开源程序
-        cout << "can't open this file";
+        cout << "Can't open path: " << path;
         exit(0);
     }
     resourceProject.unsetf(std::ios_base::skipws);
